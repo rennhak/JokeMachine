@@ -1,11 +1,12 @@
 ---
 
-type:           Jokes source
+type:           Text
 name:           Reddit Jokes Group
+module:         reddit
 base_url:       http://www.reddit.com
 robots:         http://www.reddit.com/robots.txt
-jokes_url:      #{base_url}/r/jokes
-get_json:       #{jokes_url}/.json
+jokes_url:      /r/jokes
+get_json:       .json
 refresh_delay:  30                                  # in sec
 user_agent:     Ruby Jokes Crawler                  # Never lie about this to reddit
 

@@ -1,7 +1,6 @@
 #!/usr/bin/ruby
 #
 
-
 ###
 #
 # File: Reddit.rb
@@ -21,9 +20,17 @@
 
 # Libraries {{{
 
-# Custom includes (changes object behaviors)
-require 'Extensions.rb'
-require 'Logger.rb'
+# Require DataMapper
+require 'rubygems'
+require 'datamapper'
+require 'dm-core'
+require 'dm-migrations'
+
+# Require custom Joke ADT
+require 'models/Joke.rb'
+
+# Require one way hash function for content identification
+require 'digest'
 
 # }}}
 
@@ -31,7 +38,10 @@ require 'Logger.rb'
 class Reddit # {{{
 
   # Constructor for the Reddit joke source class
-  def initalize # {{{
+  def initalize logger = nil # {{{
+    raise ArgumentError, ""
+    @log = logger
+
   end # of def initalize }}}
 
   # Get the jokes in the format provided to us by the reddit website (json)
@@ -39,7 +49,7 @@ class Reddit # {{{
   end # }}}
 
   # Turns the reddit data into a Joke ADT object
-  def to_joke # {{{
+  def to_joke data # {{{
   end # of to_joke }}}
 
 end # of class Reddit }}}

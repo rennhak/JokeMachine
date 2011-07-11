@@ -34,6 +34,9 @@ require 'rubygems'
 require 'Extensions.rb'
 require 'Logger.rb'
 
+# Load modules
+#require 'modules/reddit/Reddit.rb'
+
 # }}}
 
 
@@ -68,23 +71,22 @@ class JokeMachine
       # Main Control Flow
       ##########
 
-      # Reuse if desired
-      # use_cache     if( @options.cache )
-
       unless( @options.process.empty? )
         @options.process.each do |config_file|
           config_filename    = @config.config_dir + "/" + config_file + ".yaml"
           @log.message :info, "Loading config file (#{config_filename})"
 
           @config                     = read_config( config_filename )
-          # @file                     = @config.filename
+          
+          # Require module
+          require "modules/#{@config.module.to_s}/Main.rb"
 
+         # instance                    = @
+    
           @log.message :success, "Finished processing of #{config_filename.to_s}"
         end # of @options.process.each
 
-
       end # of unless( @options.process.empty? )
-
     end # of unless( options.nil? )
 
 
