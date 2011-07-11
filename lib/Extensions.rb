@@ -2,6 +2,9 @@
 #
 
 
+require 'yaml'
+
+
 #class Object
 #end
 #

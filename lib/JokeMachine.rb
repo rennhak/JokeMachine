@@ -78,12 +78,15 @@ class JokeMachine
 
           @config                     = read_config( config_filename )
           # @file                     = @config.filename
+
+          @log.message :success, "Finished processing of #{config_filename.to_s}"
         end # of @options.process.each
+
+
       end # of unless( @options.process.empty? )
 
     end # of unless( options.nil? )
 
-    @log.message :success, "Finished processing of #{config_filename.to_s}"
 
   end # of def initalize }}}
 
