@@ -178,7 +178,6 @@ class JokeMachine
   end # }}}
 
 
-
 end # of class JokeMachine
 
 
