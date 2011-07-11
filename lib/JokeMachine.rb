@@ -40,6 +40,8 @@ require 'Logger.rb'
 # The JokeMachine class controls the aquisition and display and rating of jokes.
 class JokeMachine
 
+  # Constructor of the JokeMachine class
+  # @param [OpenStruct] options   Requires an OpenStruct object with the result of the ARGV processing (JokeMachine::parse_cmd_arguments)
   def initialize options = nil # {{{
     @options = options
 
@@ -89,7 +91,7 @@ class JokeMachine
   # The function 'parse_cmd_arguments' takes a number of arbitrary commandline arguments and parses them into a proper data structure via optparse
   #
   # @param    [Array]         args  Ruby's STDIN.ARGS from commandline
-  # @returns  [OptionParser]        Ruby optparse package options hash object
+  # @returns  [OpenStruct]          OpenStruct object containing the result of the parsing process
   def parse_cmd_arguments( args ) # {{{
 
     options                                 = OpenStruct.new
