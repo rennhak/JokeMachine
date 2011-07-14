@@ -35,6 +35,7 @@ require 'digest'
 # }}}
 
 
+# The class Reddit takes care of the data handling from the reddit site to our database.
 class Reddit # {{{
 
   # Construcoptionstor for the Reddit joke source class
@@ -55,18 +56,17 @@ class Reddit # {{{
     @log.message :info, "Downloading content from #{@url.to_s}"
 
     p get_jokes
-
   end # of def initalize }}}
 
 
   # Get the jokes in the format provided to us by the reddit website (json)
   def get_jokes url = @url # {{{
+    p url
   end # }}}
 
 
   # Turns the reddit data into a Joke ADT object
   def to_joke data # {{{
-    
   end # of to_joke }}}
 
 
