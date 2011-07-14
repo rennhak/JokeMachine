@@ -26,11 +26,17 @@ require 'datamapper'
 require 'dm-core'
 require 'dm-migrations'
 
+# Handle Reddit Data format
+require 'json'
+
 # Require custom Joke ADT
 require 'models/Joke.rb'
 
 # Require one way hash function for content identification
 require 'digest'
+
+require 'Downloader.rb'
+
 
 # }}}
 
@@ -61,7 +67,15 @@ class Reddit # {{{
 
   # Get the jokes in the format provided to us by the reddit website (json)
   def get_jokes url = @url # {{{
-    p url
+    # Pre-condition
+
+    # Main
+    downloader  = Downloader.new
+    toc         = downloader.get( url )
+
+    p JSON.parse( toc.content.join( "\n" ) )
+
+    # Post-condition
   end # }}}
 
 
