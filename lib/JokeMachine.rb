@@ -77,18 +77,19 @@ class JokeMachine
           @log.message :info, "Loading config file (#{config_filename})"
 
           @config                     = read_config( config_filename )
-          
+
           # Require module
           require "modules/#{@config.module.to_s}/Main.rb"
 
-         # instance                    = @
-    
+          # Create instance and get new data
+          instance                    = eval( "#{@config.module.capitalize.to_s}.new( @log, @config )" )
+          instance.update
+
           @log.message :success, "Finished processing of #{config_filename.to_s}"
         end # of @options.process.each
 
       end # of unless( @options.process.empty? )
     end # of unless( options.nil? )
-
 
   end # of def initalize }}}
 
@@ -105,6 +106,7 @@ class JokeMachine
     options.verbose                         = false
     options.colorize                        = false
     options.process                         = []
+    options.debug                           = false
 
     pristine_options                        = options.dup
 
@@ -125,6 +127,10 @@ class JokeMachine
       # Boolean switch.
       opts.on("-v", "--verbose", "Run verbosely") do |v|
         options.verbose = v
+      end
+
+      opts.on("-d", "--debug", "Run in debug mode") do |d|
+        options.debug = d
       end
 
       # Boolean switch.

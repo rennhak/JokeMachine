@@ -37,21 +37,55 @@ require 'digest'
 
 class Reddit # {{{
 
-  # Constructor for the Reddit joke source class
-  def initalize logger = nil # {{{
-    raise ArgumentError, ""
-    @log = logger
+  # Construcoptionstor for the Reddit joke source class
+  #
+  # @param [Logger]       logger
+  # @param [OpenStruct]   config
+  def initialize logger = nil, config = nil # {{{
+    raise ArgumentError, "Need a valid logger instance" if( logger.nil? )
+    raise ArgumentError, "Need a valid config instance" if( config.nil? )
+
+
+    @log        = logger
+    @config     = config
+
+    @log.message :debug, "Created Reddit class instance"
+
+    @url        = @config.base_url + "/" + @config.jokes_url + "/" + @config.get_json
+    @log.message :info, "Downloading content from #{@url.to_s}"
+
+    p get_jokes
 
   end # of def initalize }}}
 
+
   # Get the jokes in the format provided to us by the reddit website (json)
-  def get_jokes url # {{{
+  def get_jokes url = @url # {{{
   end # }}}
+
 
   # Turns the reddit data into a Joke ADT object
   def to_joke data # {{{
+    
   end # of to_joke }}}
+
+
+  # The function update downloads the current data, but does not store to database yet
+  # @param
+  # @returns 
+  def update # {{{
+  end # of def update }}}
+
+
+  # The function update downloads the current data and stores it in the database
+  # @param 
+  # @returns
+  def update! # {{{
+  end # of def update! }}}
 
 end # of class Reddit }}}
 
 
+# Direct invocation 
+if __FILE__ == $0 # {{{
+end # of if __FILE__ == $0 }}}
