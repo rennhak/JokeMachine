@@ -62,13 +62,14 @@ class Reddit # {{{
     @log.message :debug, "Created Reddit class instance"
 
     @db_type, @db_path  = db_type, db_path
-    data_mapper_init if( @db_type.nil? or @db_path.nil? )
+    data_mapper_init( "sqlite3", "data/databases/test.sqlite3", true ) if( @db_type.nil? or @db_path.nil? )
 
     @url          = @config.base_url + "/" + @config.jokes_url + "/" + @config.get_json
 
     @jokes        = make
     @jokes        = remove_existing( @jokes )
     
+    store!
 
     # to_s
   end # of def initalize }}}
@@ -321,10 +322,26 @@ class Reddit # {{{
   end # of def update }}}
 
 
-  # The function update downloads the current data and stores it in the database
-  # @param 
-  # @returns
-  def update! # {{{
+  # The function stores the current data to the database
+  #
+  # @param    [Array]     jokes     Requires an Array containing properly instantiated Joke ADT objects
+  # @returns  [Boolean]             Success if true, false if it couldn't be stored in the database
+  def store! jokes = @jokes # {{{
+    # Pre-condition
+    raise ArgumentError, "The input of this function should be an Array, but is of type (#{jokes.class.to_s})" unless( jokes.is_a?( Array ) )
+
+    # Main
+    success = false
+
+    jokes.each do |joke|
+      success = joke.save
+      unless( success )
+        puts "Couldn't save #{joke.url.to_s} to the Database (title sha1: #{joke.title_sha1sum.to_s})" 
+        #break
+      end
+    end
+
+    success
   end # of def update! }}}
 
 end # of class Reddit }}}
