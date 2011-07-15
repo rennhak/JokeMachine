@@ -68,10 +68,8 @@ class Reddit # {{{
 
     @jokes        = make
     @jokes        = remove_existing( @jokes )
-    
-    store!
 
-    # to_s
+    store!
   end # of def initalize }}}
 
 
@@ -308,18 +306,6 @@ class Reddit # {{{
 
     jokes
   end # }}}
-
-
-  # The function takes the current jokes and asks the user for a rating of this joke
-  def rate # {{{
-  end # }}}
-
-
-  # The function update the current data, but does not store to database yet
-  # @param
-  # @returns 
-  def update jokes = @jokes # {{{
-  end # of def update }}}
 
 
   # The function stores the current data to the database
