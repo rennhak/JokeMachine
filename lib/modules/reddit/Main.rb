@@ -66,10 +66,7 @@ class Reddit # {{{
 
     @url          = @config.base_url + "/" + @config.jokes_url + "/" + @config.get_json
 
-    @jokes        = make
-    @jokes        = remove_existing( @jokes )
-
-    store!
+    @jokes        = []
   end # of def initalize }}}
 
 
@@ -151,6 +148,7 @@ class Reddit # {{{
         if( item[ "is_self"       ] )  # "is_self"=>true
           joke = Hash.new
 
+          joke[ "joke_id"       ] = item[ "name"          ]
           joke[ "url"           ] = item[ "url"           ]
           joke[ "over_18"       ] = item[ "over_18"       ] # "over_18"=>false
           joke[ "ups"           ] = item[ "ups"           ] # "ups"=>17
@@ -235,6 +233,7 @@ class Reddit # {{{
     #    joke[ "selftext"      ] = item[ "selftext"      ] # "selftext"=>"The bartender looks the grasshopper up and down for a minute until he finally says, \"you know, I'm pretty sure we have a drink named after you.\" \nThe grasshopper replies, \"Really?! You guys got a drink named Dave?!\""
     #    joke[ "downs"         ] = item[ "downs"         ] # "downs"=>19
     
+    joke.joke_id        = hash[ "joke_id"             ]
     joke.url            = hash[ "url"                 ]
     joke.over_18        = hash[ "over_18"             ]
     joke.ups            = hash[ "ups"                 ]
@@ -333,6 +332,42 @@ class Reddit # {{{
     end
 
     success
+  end # of def update! }}}
+
+
+  # The function takes a number and retrieves a that many jokes from the jokes pages (or until there is nothing left)
+  #
+  # @param    [Integer]     amount    Expects an integer of the amount of jokes to retrieve 1-n
+  def update amount = 25 # {{{
+
+    # First iteration or not?
+    while( amount > 0 )
+
+      if( @jokes.empty? )
+        @jokes        = make
+      else
+        # Get id of last joke from the page
+        joke_id = ( @jokes.last ).joke_id
+        break if( joke_id.nil? )
+
+        url           = @config.base_url + "/" + @config.jokes_url + "/" + @config.get_json + "?count=25&after=#{joke_id.to_s}"
+        tmp           = make( get( url ) )
+        @jokes.concat( tmp )
+      end
+
+      amount -= 25  # there are 25 items on one page normally
+    end
+
+    @jokes        = remove_existing( @jokes )
+  end # of def update }}}
+
+
+  # The function takes a number and retrieves a that many jokes from the jokes pages (or until there is nothing left)
+  #
+  # @param    [Integer]     amount    Expects an integer of the amount of jokes to retrieve 1-n
+  def update! amount = 25  # {{{
+    update( amount )
+    store!
   end # of def update! }}}
 
 end # of class Reddit }}}

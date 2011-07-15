@@ -12,6 +12,8 @@ class Joke
   property :content_encoding, String
   property :content_type,     String
 
+  property :joke_id,          String
+
   property :sha1sum,          String,     :length => 41
   property :title,            String,     :length => 500,     :required => true
   property :content,          String,     :length => 65536,   :required => true
