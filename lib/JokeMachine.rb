@@ -30,6 +30,12 @@ require 'pp'
 # Standard includes
 require 'rubygems'
 
+# Require DataMapper
+require 'rubygems'
+require 'datamapper'
+require 'dm-core'
+require 'dm-migrations'
+
 # Custom includes (changes object behaviors)
 require 'Extensions.rb'
 require 'Logger.rb'
@@ -56,9 +62,12 @@ class JokeMachine
     @config.platform              = "Unknown"
     @config.encoding              = "UTF-8"
     @config.archive_dir           = "archive"
-    @config.database_dir          = "database"
+    @config.database_dir          = "data/database"
     @config.config_dir            = "configurations"
     @config.cache_dir             = "cache"
+    @config.db_connector          = ""
+    @config.db_type               = ""
+    @config.db_path               = ""
 
     # Determine which configs are available
     @configurations       = Dir[ "#{@config.config_dir}/*.yaml" ].collect { |d| d.gsub( "#{@config.config_dir}/", "" ).gsub( ".yaml", "" ) }
@@ -71,6 +80,12 @@ class JokeMachine
       # Main Control Flow
       ##########
 
+      # DataMapper
+      @config.db_path, @config.db_type = @options.db_path, @options.db_type
+      @config.db_connector = "#{@options.db_type}://#{Dir.pwd}/#{@options.db_path}"
+      @log.message :info, "Setting up DataMapper (#{@config.db_connector.to_s})"
+      data_mapper_init
+
       unless( @options.process.empty? )
         @options.process.each do |config_file|
           config_filename    = @config.config_dir + "/" + config_file + ".yaml"
@@ -82,8 +97,7 @@ class JokeMachine
           require "modules/#{@config.module.to_s}/Main.rb"
 
           # Create instance and get new data
-          instance                    = eval( "#{@config.module.capitalize.to_s}.new( @log, @config )" )
-          instance.update
+          instance                    = eval( "#{@config.module.capitalize.to_s}.new( @log, @config, @config.db_type, @config.db_path )" )
 
           @log.message :success, "Finished processing of #{config_filename.to_s}"
         end # of @options.process.each
@@ -92,6 +106,24 @@ class JokeMachine
     end # of unless( options.nil? )
 
   end # of def initalize }}}
+
+
+  # Data_mapper_init takes a db type and path and initializes the database in case we want to execute this object directly and have no DB
+  # @param [String] db_type Type of the database connector used, eg. sqlite3
+  # @param [String] db_path Path of the database, eg. databases/test.sqlite3
+  # @param [Boolean] logging Turns DataMapper logging on or off
+  def data_mapper_init db_type = @config.db_type, db_path = @config.db_path, logging = @options.debug # {{{
+    # DataMapper::Logger.new( $stdout, :debug ) if( logging )
+
+    db_connector = "#{db_type}://#{Dir.pwd}/#{db_path}"
+
+    @log.message :info, "We don't have any DataMapper init info, so we will create a new database at #{db_connector.to_s} (JokeMachine)"
+    DataMapper.setup( :default, db_connector )
+
+    # DataMapper.auto_migrate!  # wipe out existing data
+    DataMapper.auto_upgrade!    # try to preserve data and insert NULL's if new colums
+    DataMapper.finalize
+  end # }}}
 
 
   # The function 'parse_cmd_arguments' takes a number of arbitrary commandline arguments and parses them into a proper data structure via optparse
@@ -107,6 +139,8 @@ class JokeMachine
     options.colorize                        = false
     options.process                         = []
     options.debug                           = false
+    options.db_path                         = "data/database/test.db"
+    options.db_type                         = "sqlite3"
 
     pristine_options                        = options.dup
 
@@ -115,6 +149,14 @@ class JokeMachine
 
       opts.separator ""
       opts.separator "General options:"
+
+      opts.on("-d", "--db-path PATH", "Use the database which can be found in PATH") do |d|
+        options.db_path = d
+      end
+
+      opts.on("-t", "--db-type TYPE", "Use the database of class TYPE (e.g. sqlite3)") do |t|
+        options.db_type = t
+      end
 
       opts.separator ""
       opts.separator "Specific options:"

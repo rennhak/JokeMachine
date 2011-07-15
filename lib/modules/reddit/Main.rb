@@ -78,14 +78,16 @@ class Reddit # {{{
   # @param [String] db_path Path of the database, eg. databases/test.sqlite3
   # @param [Boolean] logging Turns DataMapper logging on or off
   def data_mapper_init db_type = "sqlite3", db_path = "data/databases/test.sqlite3", logging = false # {{{
-    DataMapper::Logger.new( $stdout, :debug ) if( logging )
+    # DataMapper::Logger.new( $stdout, :debug ) if( logging )
 
     db_connector = "#{db_type}://#{Dir.pwd}/#{db_path}"
 
-    @log.message :info, "We don't have any DataMapper init info, so we will create a new database at #{db_connector.to_s}"
+    @log.message :info, "We don't have any DataMapper init info, so we will create a new database at #{db_connector.to_s} (./reddit/Main.rb)"
     DataMapper.setup( :default, db_connector )
 
-    DataMapper.auto_migrate!
+
+    # DataMapper.auto_migrate! # wipes out db
+    DataMapper.auto_upgrade! # trys to keep data
     DataMapper.finalize
   end # }}}
 
@@ -296,6 +298,7 @@ class Reddit # {{{
         end # of if( c_query.empty?) 
       end # of if( t_query.empty? )
 
+      @log.message :debug, "Removing title: '#{joke.title.chomp.to_s}' from the jokes list (found it already in the DB)" if( remove )
       ( remove ) ? ( nil ) : ( joke )
     end # of jokes.collect! do
 
@@ -318,6 +321,8 @@ class Reddit # {{{
 
     # Main
     success = false
+
+    @log.message :debug, "Storing #{jokes.length} into the DB"
 
     jokes.each do |joke|
       success = joke.save
