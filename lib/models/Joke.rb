@@ -29,6 +29,22 @@ class Joke
 
   property :content_sha1sum,  String,     :length => 41
   property :title_sha1sum,    String,     :length => 41
+
+
+  # Display joke properly on STDOUT
+  def to_s # {{{
+<<EOS
+|^\_____________________________________________________________________________/^|
+
+\t'#{self.title.chomp.to_s}'
+
+\t#{self.content.to_s.chomp}
+
+|/^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\|
+
+EOS
+  end # of def to_s }}}
+
 end
 
 

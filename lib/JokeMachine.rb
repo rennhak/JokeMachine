@@ -40,8 +40,8 @@ require 'dm-migrations'
 require 'Extensions.rb'
 require 'Logger.rb'
 
-# Load modules
-#require 'modules/reddit/Reddit.rb'
+# Require custom Joke ADT for searching
+require 'models/Joke.rb'
 
 # }}}
 
@@ -108,9 +108,23 @@ class JokeMachine
 
       # This should maybe be in a client app instead
       if( @options.read )
+        @jokes = Joke.all
         
-      end
+        puts "-----[ DISPLAYING #{@jokes.length.to_s} JOKES ]----- \n\n"
 
+        listing_amount = 5
+
+        @jokes.each_with_index do |joke, index|
+          if( ( ( index % listing_amount ) == 0 ) and (index != 0 )) 
+            # Pause unstil the user presses a key
+            puts "\n[ PRESS A ENTER TO CONTINUE  \-> ]"
+            STDIN.gets
+          else
+            puts joke.to_s
+          end # of if( ( index % listing_amount ) == 0 )
+
+        end
+      end
 
     end # of unless( options.nil? )
 
@@ -141,6 +155,7 @@ class JokeMachine
   # @returns  [OpenStruct]          OpenStruct object containing the result of the parsing process
   def parse_cmd_arguments( args ) # {{{
 
+    original_args                           = args.dup
     options                                 = OpenStruct.new
 
     # Define default options
@@ -148,7 +163,7 @@ class JokeMachine
     options.colorize                        = false
     options.process                         = []
     options.debug                           = false
-    options.db_path                         = "data/database/test.db"
+    options.db_path                         = "data/databases/test.sqlite3"
     options.db_type                         = "sqlite3"
     options.read                            = false
 
@@ -210,14 +225,14 @@ class JokeMachine
       # Another typical switch to print the version.
       opts.on_tail("--version", "Show version") do
         puts OptionParser::Version.join('.')
-        exi.sortt
+        exit
       end
     end
 
     opts.parse!(args)
 
     # Show opts if we have no cmd arguments
-    if( ARGV.empty? )
+    if( original_args.empty? )
       puts opts
       exit
     end
