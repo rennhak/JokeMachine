@@ -98,12 +98,20 @@ class JokeMachine
 
           # Create instance and get new data
           instance                    = eval( "#{@config.module.capitalize.to_s}.new( @log, @config, @config.db_type, @config.db_path )" )
-          instance.update!(100)
+          amount                      = @config.amount
+          instance.update!( amount )
 
           @log.message :success, "Finished processing of #{config_filename.to_s}"
         end # of @options.process.each
-
       end # of unless( @options.process.empty? )
+
+
+      # This should maybe be in a client app instead
+      if( @options.read )
+        
+      end
+
+
     end # of unless( options.nil? )
 
   end # of def initalize }}}
@@ -142,6 +150,7 @@ class JokeMachine
     options.debug                           = false
     options.db_path                         = "data/database/test.db"
     options.db_type                         = "sqlite3"
+    options.read                            = false
 
     pristine_options                        = options.dup
 
@@ -157,6 +166,10 @@ class JokeMachine
 
       opts.on("-t", "--db-type TYPE", "Use the database of class TYPE (e.g. sqlite3)") do |t|
         options.db_type = t
+      end
+
+      opts.on("-r", "--read", "Read jokes that are stored in the DB") do |r|
+        options.read = r
       end
 
       opts.separator ""
@@ -204,7 +217,9 @@ class JokeMachine
     opts.parse!(args)
 
     # Show opts if we have no cmd arguments
-    if( options == pristine_options )
+    if( ARGV.empty? )
+      puts opts
+      exit
     end
 
     options
