@@ -115,13 +115,20 @@ class JokeMachine
         listing_amount = 3
 
         @jokes.each_with_index do |joke, index|
+
+
           if( ( ( index % listing_amount ) == 0 ) and (index != 0 )) 
+
+            puts "----- [ JOKE NR. #{( index + 1 ).to_s} ] ------"
+            puts joke.to_s
+
             # Pause unstil the user presses a key
-            puts "\n[ PRESS A ENTER TO CONTINUE  \-> ]"
+            puts "\n[ PRESS A ENTER TO CONTINUE (Index: #{(index + 1 ).to_s} \-> ]"
             STDIN.gets
             system( "clear" )
           else
-            puts joke.to_s
+              puts "----- [ JOKE NR. #{( index + 1 ).to_s} ] ------"
+              puts joke.to_s
           end # of if( ( index % listing_amount ) == 0 )
 
         end
