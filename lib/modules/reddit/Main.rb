@@ -340,6 +340,10 @@ class Reddit # {{{
   # @param    [Integer]     amount    Expects an integer of the amount of jokes to retrieve 1-n
   def update amount = 25 # {{{
 
+    # Pre-condition check
+    raise ArgumentError, "Download amount may not be nil" if( amount.nil? )
+    raise ArgumentError, "Download amount of type integer expected, but got (#{amount.class.to_s})" unless( amount.is_a?( Integer ) )
+
     # First iteration or not?
     while( amount > 0 )
 

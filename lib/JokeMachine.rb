@@ -98,7 +98,7 @@ class JokeMachine
 
           # Create instance and get new data
           instance                    = eval( "#{@config.module.capitalize.to_s}.new( @log, @config, @config.db_type, @config.db_path )" )
-          amount                      = @config.amount
+          amount                      = @config.download_amount
           instance.update!( amount )
 
           @log.message :success, "Finished processing of #{config_filename.to_s}"
