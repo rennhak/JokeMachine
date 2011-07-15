@@ -162,8 +162,6 @@ class JokeMachine
 
     # Show opts if we have no cmd arguments
     if( options == pristine_options )
-      puts opts
-      puts ""
     end
 
     options

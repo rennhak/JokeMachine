@@ -48,22 +48,47 @@ class Reddit # {{{
   #
   # @param [Logger]       logger
   # @param [OpenStruct]   config
-  def initialize logger = nil, config = nil # {{{
+  # @param [String]       db_type This string represents the db connector used for DataMapper, e.g. "sqlite3"
+  # @param [String]       db_path This string represents the db path used for DataMapper, e.g. "data/database/foo.sqlite3"
+  def initialize logger = nil, config = nil, db_type = nil, db_path = nil # {{{
     raise ArgumentError, "Need a valid logger instance" if( logger.nil? )
     raise ArgumentError, "Need a valid config instance" if( config.nil? )
-
+    # raise ArgumentError, "db_type needs to be of type string" unless( db_type.is_a?( String ) )
+    # raise ArgumentError, "db_path needs to be of type string" unless( db_path.is_a?( String ) )
 
     @log          = logger
     @config       = config
 
     @log.message :debug, "Created Reddit class instance"
 
+    @db_type, @db_path  = db_type, db_path
+    data_mapper_init if( @db_type.nil? or @db_path.nil? )
+
     @url          = @config.base_url + "/" + @config.jokes_url + "/" + @config.get_json
 
-    @jokes        = make_jokes
+    @jokes        = make
+    @jokes        = remove_existing( @jokes )
+    
 
-    to_s
+    # to_s
   end # of def initalize }}}
+
+
+  # Data_mapper_init takes a db type and path and initializes the database in case we want to execute this object directly and have no DB give from JokeMachine main class.
+  # @param [String] db_type Type of the database connector used, eg. sqlite3
+  # @param [String] db_path Path of the database, eg. databases/test.sqlite3
+  # @param [Boolean] logging Turns DataMapper logging on or off
+  def data_mapper_init db_type = "sqlite3", db_path = "data/databases/test.sqlite3", logging = false # {{{
+    DataMapper::Logger.new( $stdout, :debug ) if( logging )
+
+    db_connector = "#{db_type}://#{Dir.pwd}/#{db_path}"
+
+    @log.message :info, "We don't have any DataMapper init info, so we will create a new database at #{db_connector.to_s}"
+    DataMapper.setup( :default, db_connector )
+
+    DataMapper.auto_migrate!
+    DataMapper.finalize
+  end # }}}
 
 
   # Display jokes properly on STDOUT
@@ -72,7 +97,7 @@ class Reddit # {{{
       puts ""
       puts "----[ #{joke.title} ]----\n\n"
       puts "#{joke.content}\n"
-      puts "----[ U: #{joke.ups} ]----[ D: #{joke.downs} ]----[ S: #{joke.score} ]-----"
+      puts "----[ U: #{joke.ups} ]----[ D: #{joke.downs} ]---------"
       puts ""
     end
   end # of def to_s }}}
@@ -82,7 +107,7 @@ class Reddit # {{{
   #
   # @param    [String]    url   Needs an string argument representing the URI where to download the JSON source.
   # @returns  [Array]           Result returned is an Array ([ jokes, metadata ]) where each jokes array contains Hashes as elements, which hold the essential joke data and metadata is the output from Downloader::get.
-  def get_jokes url = @url # {{{
+  def get url = @url # {{{
 
     # Pre-condition
     raise ArgumentError, "The url argument should be of type string, but is (#{url.class.to_s})" unless( url.is_a?(String) )
@@ -148,14 +173,14 @@ class Reddit # {{{
     raise ArgumentError, "Result should be of type Array, but is (#{jokes.class.to_s})" unless( jokes.is_a?( Array ) )
 
     [ jokes, toc ]
-  end # }}}
+  end # of get }}}
 
 
   # The function takes the intermediate data from get_jokes and turns the content into proper joke ADT's
   #
   # @param    [Array]    data   Input needs to match the specific output from the get_jokes function.
   # @returns  [Array]           Returns an Array containing proper instanciated Joke ADT objects
-  def make_jokes input = get_jokes # {{{
+  def make input = get # {{{
     # Pre-condition
     raise ArgumentError, "Expecting input to be of type Array, but it is (#{input.class.to_s})" unless( input.is_a?(Array) )
 
@@ -186,7 +211,7 @@ class Reddit # {{{
     raise ArgumentError, "Expecting output to be of type Array, but it is (#{jokes.class.to_s})" unless( jokes.is_a?(Array) )
 
     jokes
-  end # of make_jokes }}}
+  end # of make }}}
 
 
   # Turns the reddit data into a Joke ADT object
@@ -230,11 +255,69 @@ class Reddit # {{{
   end # of to_joke }}}
 
 
-  # The function update downloads the current data, but does not store to database yet
+  # The function takes the downloaded jokes and checks against the database if the jokes are already there
+  #
+  # @param    [Array]   jokes     Requires an Array containing properly instantiated Joke ADT objects
+  # @returns  [Array]             Returns Array containing jokes which currently don't exist in the Database
+  def remove_existing jokes = @jokes # {{{
+
+    # Pre-condition
+    raise ArgumentError, "The input of this function should be an Array, but is of type (#{jokes.class.to_s})" unless( jokes.is_a?( Array ) )
+
+    # Main
+    jokes.collect! do |joke|
+      title_sha1sum   = joke.title_sha1sum
+      content_sha1sum = joke.content_sha1sum
+
+      t_query = Joke.all( :title_sha1sum    => title_sha1sum    )
+      c_query = Joke.all( :content_sha1sum  => content_sha1sum  )
+      
+      remove = false
+
+      if( t_query.empty? )
+
+        # the joke title doesn't exist in the DB
+        if( c_query.empty? )
+          # joke title & content doesn't exist in DB
+          remove = false
+        else
+          # joke title => no ; joke content => yes (duplicate joke)
+          remove = true
+        end # of if( c_query.empty?) 
+
+      else # of if( t_query.empty? )
+
+        # the joke title exists in the DB
+        if( c_query.empty? )
+          # joke title => yes & content doesn't exist in DB (variation of the joke?)
+          remove = false 
+        else
+          # joke title => yes ; joke content => yes
+          remove = true
+        end # of if( c_query.empty?) 
+      end # of if( t_query.empty? )
+
+      ( remove ) ? ( nil ) : ( joke )
+    end # of jokes.collect! do
+
+    jokes.compact!
+
+    # Post-condition
+    raise ArgumentError, "The result of this function should be an Array, but is of type (#{jokes.class.to_s})" unless( jokes.is_a?( Array ) )
+
+    jokes
+  end # }}}
+
+
+  # The function takes the current jokes and asks the user for a rating of this joke
+  def rate # {{{
+  end # }}}
+
+
+  # The function update the current data, but does not store to database yet
   # @param
   # @returns 
   def update jokes = @jokes # {{{
-    
   end # of def update }}}
 
 
