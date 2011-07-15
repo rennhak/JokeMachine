@@ -33,17 +33,30 @@ class Joke
 
   # Display joke properly on STDOUT
   def to_s # {{{
+    c = wrap( self.content.to_s.chomp )
+    t = wrap( self.title.to_s.chomp )
+
 <<EOS
 |^\_____________________________________________________________________________/^|
 
-\t'#{self.title.chomp.to_s}'
+\t'#{t}'
 
-\t#{self.content.to_s.chomp}
+\t#{c}
 
 |/^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\|
 
 EOS
   end # of def to_s }}}
+
+  def wrap(s)
+    s.split("\n").map do |t|
+      if t =~ /^[>|]/
+        t + "\n"
+      else
+        t.gsub(/(.{1,74})(\s+|$)/,"\\1\n")
+      end
+    end.join('')
+  end
 
 end
 

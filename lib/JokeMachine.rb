@@ -108,17 +108,18 @@ class JokeMachine
 
       # This should maybe be in a client app instead
       if( @options.read )
-        @jokes = Joke.all
+        @jokes = ( Joke.all ).reverse
         
         puts "-----[ DISPLAYING #{@jokes.length.to_s} JOKES ]----- \n\n"
 
-        listing_amount = 5
+        listing_amount = 3
 
         @jokes.each_with_index do |joke, index|
           if( ( ( index % listing_amount ) == 0 ) and (index != 0 )) 
             # Pause unstil the user presses a key
             puts "\n[ PRESS A ENTER TO CONTINUE  \-> ]"
             STDIN.gets
+            system( "clear" )
           else
             puts joke.to_s
           end # of if( ( index % listing_amount ) == 0 )
