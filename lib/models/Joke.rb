@@ -48,6 +48,8 @@ class Joke
 EOS
   end # of def to_s }}}
 
+  # Inspired by: http://www.justskins.com/forums/line-wrapping-66819.html
+  # credit: Warren Brown
   def wrap(s)
     s.split("\n").map do |t|
       if t =~ /^[>|]/
