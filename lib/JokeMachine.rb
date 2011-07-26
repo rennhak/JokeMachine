@@ -88,6 +88,7 @@ class JokeMachine # {{{
       @log.message :info, "Setting up DataMapper (#{@config.db_connector.to_s})"
       data_mapper_init
 
+      # Go through each module for updates
       unless( @options.process.empty? )
         @options.process.each do |config_file|
           config_filename    = @config.config_dir + "/" + config_file + ".yaml"
