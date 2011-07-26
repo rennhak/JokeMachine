@@ -39,6 +39,7 @@ require 'dm-migrations'
 # Custom includes (changes object behaviors)
 require 'Extensions.rb'
 require 'Logger.rb'
+require 'Display.rb'
 
 # Require custom Joke ADT for searching
 require 'models/Joke.rb'
@@ -106,33 +107,11 @@ class JokeMachine # {{{
         end # of @options.process.each
       end # of unless( @options.process.empty? )
 
-
       # This should maybe be in a client app instead
       if( @options.read )
-        @jokes = ( Joke.all ).reverse
-        
-        puts "-----[ DISPLAYING #{@jokes.length.to_s} JOKES ]----- \n\n"
-
-        listing_amount = 3
-
-        @jokes.each_with_index do |joke, index|
-
-
-          if( ( ( index % listing_amount ) == 0 ) and (index != 0 )) 
-
-            puts "----- [ JOKE NR. #{( index + 1 ).to_s} ] ------"
-            puts joke.to_s
-
-            # Pause unstil the user presses a key
-            puts "\n[ PRESS A ENTER TO CONTINUE (Index: #{(index + 1 ).to_s} \-> ]"
-            STDIN.gets
-            system( "clear" )
-          else
-              puts "----- [ JOKE NR. #{( index + 1 ).to_s} ] ------"
-              puts joke.to_s
-          end # of if( ( index % listing_amount ) == 0 )
-
-        end
+        @jokes    = ( Joke.all ).reverse
+        @display  = Display.new( @jokes )
+        @display.to_stdout
       end
 
     end # of unless( options.nil? )
