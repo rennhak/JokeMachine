@@ -47,9 +47,10 @@ require 'models/Joke.rb'
 
 
 # The JokeMachine class controls the aquisition and display and rating of jokes.
-class JokeMachine
+class JokeMachine # {{{
 
   # Constructor of the JokeMachine class
+  #
   # @param [OpenStruct] options   Requires an OpenStruct object with the result of the ARGV processing (JokeMachine::parse_cmd_arguments)
   def initialize options = nil # {{{
     @options = options
@@ -140,6 +141,7 @@ class JokeMachine
 
 
   # Data_mapper_init takes a db type and path and initializes the database in case we want to execute this object directly and have no DB
+  #
   # @param [String] db_type Type of the database connector used, eg. sqlite3
   # @param [String] db_path Path of the database, eg. databases/test.sqlite3
   # @param [Boolean] logging Turns DataMapper logging on or off
@@ -267,7 +269,7 @@ class JokeMachine
     result
   end # }}}
 
-end # of class JokeMachine
+end # of class JokeMachine }}}
 
 
 # Direct Invocation
