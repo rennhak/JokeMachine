@@ -26,6 +26,7 @@ require 'optparse'
 require 'optparse/time'
 require 'ostruct'
 require 'pp'
+require 'date'
 
 # Standard includes
 require 'rubygems'
@@ -43,6 +44,7 @@ require 'Display.rb'
 
 # Require custom Joke ADT for searching
 require 'models/Joke.rb'
+require 'models/Website.rb'
 
 # }}}
 
@@ -130,12 +132,56 @@ class JokeMachine # {{{
       # Create instance and get new data
       instance                    = eval( "#{@config.module.capitalize.to_s}.new( @log, @config, @config.db_type, @config.db_path )" )
       amount                      = @config.download_amount
+
+      # Do we need to wait?
+      sleep_time                  = sleep?( @config.module.to_s, @config.refresh_delay )
+      sleep sleep_time unless( sleep_time == 0 )
+
+      # Update
       instance.update!( amount )
 
       @log.message :success, "Finished processing of #{config_filename.to_s}"
     end # of @options.process.each
   end # of def update_modules }}}
 
+
+  # The function returns the sleep time required before another poll can be made.
+  # e.g. reddits says "don't poll more often than every 30s"
+  #
+  # @param    [String]    module_name     Requires a string containing a valid module name (given by e.g. CLI interface)
+  # @param    [Integer]   refresh_delay   Wait this uamount (in sec) at least before next refresh from last refresh (given by config file)
+  # @returns  [Integer]                   Time to next refresh is possible. Is zero if refresh can be done immediately
+  def sleep? module_name = nil, refresh_delay = 60 # {{{
+
+    # Pre-condition check # {{{
+    raise ArgumentError, "Module name cannot be nil, but it is" if( module_name.nil? )
+    raise ArgumentError, "Module name should be of type string, but it is (#{module_name.class.to_s})" unless( module_name.is_a?(String) )
+    # }}}
+
+    # Main
+    sleep_time          = 60 # make sure we always wait 60 s if we get no valid feedback
+
+    website       = Website.find( :name => module_name )
+    last_access   = website.last_access.to_i
+
+    # TODO:
+    # takle problem of updating the last_access time
+    # takle problem of db error
+    raise NotImplementedError, "Not Implemented"
+
+    raise ArgumentError, "last_access cannot be nil" if( last_access.nil? )
+    raise ArgumentError, "last_access needs to be of type Time, but is (#{last_access.class.to_s})" if( last_access.is_a?( Time ) )
+
+    now           = Time.now.to_i
+    diff          = (now - last_access).abs
+
+    sleep_time    = ( diff > refresh_delay ) ? ( 0 ) : ( refresh_delay - diff )
+
+    # Post-condition check
+    raise ArgumentError, "Result of this function is supposed to be of type integer, but is (#{sleep_time.class.to_s})" unless( sleep_time.is_a?(Integer) )
+
+    sleep_time
+  end # of def update_sleep }}}
 
   # Data_mapper_init takes a db type and path and initializes the database in case we want to execute this object directly and have no DB
   #

@@ -6,10 +6,9 @@ class Website
 
   property :id,               Serial
   property :created_at,       DateTime
-  property :last_access,      DateTime
+  property :last_access,      Time
 
-  property :url,              String,     :length => 200,     :required => true
-
+  property :name,             String
 end
 
 
