@@ -90,22 +90,16 @@ class JokeMachine # {{{
 
       # Go through each module for updates
       unless( @options.process.empty? )
-        @options.process.each do |config_file|
-          config_filename    = @config.config_dir + "/" + config_file + ".yaml"
-          @log.message :info, "Loading config file (#{config_filename})"
-
-          @config                     = read_config( config_filename )
-
-          # Require module
-          require "modules/#{@config.module.to_s}/Main.rb"
-
-          # Create instance and get new data
-          instance                    = eval( "#{@config.module.capitalize.to_s}.new( @log, @config, @config.db_type, @config.db_path )" )
-          amount                      = @config.download_amount
-          instance.update!( amount )
-
-          @log.message :success, "Finished processing of #{config_filename.to_s}"
-        end # of @options.process.each
+        if( @options.automatic.nil? )
+          while
+            update_modules
+            @log.message :info, "Sleeping #{@options.interval.to_s} seconds (#{@options.interval.to_f/(60*60)} hours)"
+            sleep @options.automatic.to_i
+          end
+        else
+          @log.message :info, "Updating given modules only ONCE"
+          update_modules
+        end
       end # of unless( @options.process.empty? )
 
       # This should maybe be in a client app instead
@@ -118,6 +112,29 @@ class JokeMachine # {{{
     end # of unless( options.nil? )
 
   end # of def initalize }}}
+
+
+  # The function updates all given modules provided from the CLI input
+  #
+  # @param  [Array]   processes     Requires and array containing all the modules which should be updated
+  def update_modules processes = @options.process # {{{
+    processes.each do |config_file|
+      config_filename    = @config.config_dir + "/" + config_file + ".yaml"
+      @log.message :info, "Loading config file (#{config_filename})"
+
+      @config                     = read_config( config_filename )
+
+      # Require module
+      require "modules/#{@config.module.to_s}/Main.rb"
+
+      # Create instance and get new data
+      instance                    = eval( "#{@config.module.capitalize.to_s}.new( @log, @config, @config.db_type, @config.db_path )" )
+      amount                      = @config.download_amount
+      instance.update!( amount )
+
+      @log.message :success, "Finished processing of #{config_filename.to_s}"
+    end # of @options.process.each
+  end # of def update_modules }}}
 
 
   # Data_mapper_init takes a db type and path and initializes the database in case we want to execute this object directly and have no DB
@@ -156,6 +173,8 @@ class JokeMachine # {{{
     options.db_path                         = "data/databases/test.sqlite3"
     options.db_type                         = "sqlite3"
     options.read                            = false
+    options.automatic                       = false
+    options.interval                        = 3600  # update normally only every hour
 
     pristine_options                        = options.dup
 
@@ -179,6 +198,15 @@ class JokeMachine # {{{
 
       opts.separator ""
       opts.separator "Specific options:"
+
+      # Boolean switch.
+      opts.on("-a", "--automatic", "Run automatically every #{options.interval.to_s} seconds unless the --interval option is given") do |a|
+        options.automatic = a
+      end
+
+      opts.on("-i", "--interval", "Run every OPT seconds (works only with --automatic together)") do |i|
+        options.interval = i
+      end
 
       # Set of arguments
       opts.on("-p", "--process OPT", @configurations, "Process one or more detected configuration (OPT: #{ @configurations.sort.join(', ') })" ) do |d|
