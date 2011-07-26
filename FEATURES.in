@@ -1,0 +1,23 @@
+# File: Features.in
+#
+
+#####
+#
+# This file lists the features which are currently available in this package.
+#
+############
+
+
+* Application
+** Commandline arguments interface
+** Supports flexible templates to handle different websites
+
+* Feature Providing Base Libraries
+** Downloads content based on config files
+
+* Development
+
+* Development Base Libraries
+
+* Code Quality
+
