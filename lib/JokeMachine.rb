@@ -120,8 +120,11 @@ class JokeMachine # {{{
           raise ArgumentError, "Need a username"
         end # of if( @options.username == "" )
 
-        @log.message :info, "Rating jokes for the user account #{@options.rate}"
-        @rate     = Rate.new( @options.rate )
+        @log.message :info, "Rating jokes for the user account '#{@options.username}'"
+        @jokes    = Joke.all
+        @rate     = Rate.new( @options.username, @jokes )
+        @rate.unrated
+
       end # of if( @options.rate )
 
     end # of unless( options.nil? )
