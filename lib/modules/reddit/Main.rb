@@ -321,7 +321,7 @@ class Reddit # {{{
     # Main
     success = false
 
-    @log.message :debug, "Storing #{jokes.length} into the DB"
+    @log.message :info, "Storing #{jokes.length} into the DB"
 
     jokes.each do |joke|
       success = joke.save
@@ -360,6 +360,12 @@ class Reddit # {{{
       end
 
       amount -= 25  # there are 25 items on one page normally
+
+      if( amount > 0 )
+        delay = @config.refresh_delay.to_i
+        @log.message :warning, "Mandatory refresh delay between requests, sleeping for #{delay.to_s} seconds"
+        sleep delay
+      end
     end
 
     @jokes        = remove_existing( @jokes )

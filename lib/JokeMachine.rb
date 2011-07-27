@@ -92,11 +92,11 @@ class JokeMachine # {{{
 
       # Go through each module for updates
       unless( @options.process.empty? )
-        if( @options.automatic.nil? )
+        if( @options.automatic )
           while
             update_modules
             @log.message :info, "Sleeping #{@options.interval.to_s} seconds (#{@options.interval.to_f/(60*60)} hours)"
-            sleep @options.automatic.to_i
+            sleep @options.interval
           end
         else
           @log.message :info, "Updating given modules only ONCE"
@@ -121,27 +121,28 @@ class JokeMachine # {{{
   # @param  [Array]   processes     Requires and array containing all the modules which should be updated
   def update_modules processes = @options.process # {{{
     processes.each do |config_file|
+
       config_filename    = @config.config_dir + "/" + config_file + ".yaml"
       @log.message :info, "Loading config file (#{config_filename})"
 
-      @config                     = read_config( config_filename )
+      config                     = read_config( config_filename )
 
       # Require module
-      require "modules/#{@config.module.to_s}/Main.rb"
+      require "modules/#{config.module.to_s}/Main.rb"
 
       # Create instance and get new data
-      instance                    = eval( "#{@config.module.capitalize.to_s}.new( @log, @config, @config.db_type, @config.db_path )" )
-      amount                      = @config.download_amount
+      instance                    = eval( "#{config.module.capitalize.to_s}.new( @log, config, @config.db_type, @config.db_path )" )
+      amount                      = config.download_amount
 
       # Do we need to wait?
-      sleep_time                  = sleep?( @config.module.to_s, @config.refresh_delay )
+      sleep_time                  = sleep?( config.module.to_s, config.refresh_delay )
       unless( sleep_time == 0 )
-        @log.message :warning, "Sleeping for #{sleep_time.to_s} seconds (#{@config.module.to_s}) due to mandatory refresh delay"
+        @log.message :warning, "Sleeping for #{sleep_time.to_s} seconds (#{config.module.to_s}) due to mandatory refresh delay"
         sleep sleep_time 
       end
 
       # Update DB that we update the website now
-      website                     = Website.first( :name => @config.module.to_s )
+      website                     = Website.first( :name => config.module.to_s )
       website.last_access         = Time.now
       website.save!
 
@@ -265,8 +266,8 @@ class JokeMachine # {{{
         options.automatic = a
       end
 
-      opts.on("-i", "--interval", "Run every OPT seconds (works only with --automatic together)") do |i|
-        options.interval = i
+      opts.on("-i", "--interval OPT", "Run every OPT seconds (works only with --automatic together)") do |i|
+        options.interval = i.to_i
       end
 
       # Set of arguments
