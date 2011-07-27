@@ -118,7 +118,6 @@ class JokeMachine # {{{
       end
 
     end # of unless( options.nil? )
-
   end # of def initalize }}}
 
 
