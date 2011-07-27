@@ -1,5 +1,5 @@
                                     Joke Machine
-                              Version 0.0.2
+                              Version 0.0.3
 
 
 
@@ -14,6 +14,8 @@ FEATURES
   o  Application
     o  Commandline arguments interface
     o  Supports flexible templates to handle different websites
+    o  Supports voting on jokes
+    o  Supports Bayes filter to sort jokes according to funnyness
 
   o  Feature Providing Base Libraries
     o  Downloads content based on config files
