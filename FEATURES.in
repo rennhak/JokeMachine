@@ -11,6 +11,7 @@
 * Application
 ** Commandline arguments interface
 ** Supports flexible templates to handle different websites
+** Supports voting on jokes
 
 * Feature Providing Base Libraries
 ** Downloads content based on config files
