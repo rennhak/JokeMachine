@@ -41,10 +41,12 @@ require 'dm-migrations'
 require 'Extensions.rb'
 require 'Logger.rb'
 require 'Display.rb'
+require 'Rate.rb'
 
 # Require custom Joke ADT for searching
 require 'models/Joke.rb'
 require 'models/Website.rb'
+require 'models/User.rb'
 
 # }}}
 
@@ -112,10 +114,15 @@ class JokeMachine # {{{
       end
 
       # This should be in a client app instead
-      unless( @options.rate == "" )
+      if( @options.rate )
+        if( @options.username == "" )
+          @log.message :error, "Have no valid username, please provide one with the -u option"
+          raise ArgumentError, "Need a username"
+        end # of if( @options.username == "" )
+
         @log.message :info, "Rating jokes for the user account #{@options.rate}"
         @rate     = Rate.new( @options.rate )
-      end
+      end # of if( @options.rate )
 
     end # of unless( options.nil? )
   end # of def initalize }}}
@@ -242,7 +249,8 @@ class JokeMachine # {{{
     options.read                            = false
     options.automatic                       = false
     options.interval                        = 3600  # update normally only every hour
-    options.rate                            = ""
+    options.rate                            = false
+    options.username                        = ""
 
     pristine_options                        = options.dup
 
@@ -264,8 +272,12 @@ class JokeMachine # {{{
         options.read = r
       end
 
-      opts.on("-r", "--rate OPT", "Rate jokes that are stored in the DB for user account OPT") do |r|
+      opts.on("-r", "--rate", "Rate jokes that are stored in the DB for user account") do |r|
         options.rate = r
+      end
+
+      opts.on("-u", "--username OPT", "Use username OPT") do |u|
+        options.username = u
       end
 
       opts.separator ""
