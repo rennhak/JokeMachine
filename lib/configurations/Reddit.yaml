@@ -7,7 +7,7 @@ base_url:                 http://www.reddit.com
 robots:                   http://www.reddit.com/robots.txt
 jokes_url:                r/jokes
 get_json:                 .json
-refresh_delay:            30                                  # in sec
+refresh_delay:            31                                  # in sec
 user_agent:               Ruby Jokes Crawler                  # Never lie about this to reddit
 download_amount:          100                                 # get 100 jokes (1-n)
 

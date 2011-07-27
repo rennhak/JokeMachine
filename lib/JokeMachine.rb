@@ -135,7 +135,15 @@ class JokeMachine # {{{
 
       # Do we need to wait?
       sleep_time                  = sleep?( @config.module.to_s, @config.refresh_delay )
-      sleep sleep_time unless( sleep_time == 0 )
+      unless( sleep_time == 0 )
+        @log.message :warning, "Sleeping for #{sleep_time.to_s} seconds (#{@config.module.to_s}) due to mandatory refresh delay"
+        sleep sleep_time 
+      end
+
+      # Update DB that we update the website now
+      website                     = Website.first( :name => @config.module.to_s )
+      website.last_access         = Time.now
+      website.save!
 
       # Update
       instance.update!( amount )
@@ -161,19 +169,26 @@ class JokeMachine # {{{
     # Main
     sleep_time          = 60 # make sure we always wait 60 s if we get no valid feedback
 
-    website       = Website.find( :name => module_name )
-    last_access   = website.last_access.to_i
+    website       = Website.first( :name => module_name )
 
-    # TODO:
-    # takle problem of updating the last_access time
-    # takle problem of db error
-    raise NotImplementedError, "Not Implemented"
+    # We have never accessed this website so we need to create an initial DB entry
+    if( website.nil? )
+      new               = Website.new
+      new.name          = module_name
+      new.last_access   = Time.now
+      new.save!
+      website           = new
+    end
+
+    last_access         = Time.parse( website.last_access.to_s )
 
     raise ArgumentError, "last_access cannot be nil" if( last_access.nil? )
-    raise ArgumentError, "last_access needs to be of type Time, but is (#{last_access.class.to_s})" if( last_access.is_a?( Time ) )
+    raise ArgumentError, "last_access needs to be of type Time, but is (#{last_access.class.to_s})" unless( last_access.is_a?( Time ) )
 
-    now           = Time.now.to_i
-    diff          = (now - last_access).abs
+    now           = Time.now
+    diff          = ( now - last_access ).to_i
+
+    @log.message :debug, "Sleep function result is - Now (#{now.to_s}) - Last Access (#{last_access.to_s}) - Mandatori Refresh Delay (#{refresh_delay.to_s}) - Now-Last (#{diff.to_s}) - Sleep (#{diff.to_s})"
 
     sleep_time    = ( diff > refresh_delay ) ? ( 0 ) : ( refresh_delay - diff )
 

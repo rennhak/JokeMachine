@@ -6,7 +6,7 @@ class Website
 
   property :id,               Serial
   property :created_at,       DateTime
-  property :last_access,      Time
+  property :last_access,      DateTime
 
   property :name,             String
 end
