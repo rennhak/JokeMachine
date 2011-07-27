@@ -42,6 +42,7 @@ require 'Extensions.rb'
 require 'Logger.rb'
 require 'Display.rb'
 require 'Rate.rb'
+require 'Filter.rb'
 
 # Require custom Joke ADT for searching
 require 'models/Joke.rb'
@@ -109,6 +110,8 @@ class JokeMachine # {{{
       # This should maybe be in a client app instead
       if( @options.read )
         @jokes    = ( Joke.all ).reverse
+        @filter   = Filter.new( @options, @options.username, @jokes )
+        @jokes    = @filter.train
         @display  = Display.new( @jokes )
         @display.to_stdout
       end
