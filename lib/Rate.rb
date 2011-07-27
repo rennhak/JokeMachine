@@ -28,15 +28,21 @@ require 'Logger.rb'
 # }}}
 
 
-# The Rate class provids means to judge a joke and stores it in the profile of the user in the database
+# The Rate class provids means to judge a jokes and stores it in the profile of the user in the database
 class Rate # {{{
 
   # Constructor
   #
   # @param  [Joke]    joke     Requires an instantiated output object of type Joke
-  def initialize joke = nil # {{{
-    raise ArgumentError, "Have no joke object" if( joke.nil? )
+  def initialize user = nil, jokes = nil # {{{
 
+    # Pre-condition check {{{
+    raise ArgumentError, "Have no user account details" if( user.nil? )
+    raise ArgumentError, "Have no jokes object" if( jokes.nil? )
+    # }}}
+
+    # Main
+    
   end # of def initialize }}}
 
 end # of class Display }}}

@@ -111,6 +111,12 @@ class JokeMachine # {{{
         @display.to_stdout
       end
 
+      # This should be in a client app instead
+      unless( @options.rate == "" )
+        @log.message :info, "Rating jokes for the user account #{@options.rate}"
+        @rate     = Rate.new( @options.rate )
+      end
+
     end # of unless( options.nil? )
 
   end # of def initalize }}}
@@ -237,6 +243,7 @@ class JokeMachine # {{{
     options.read                            = false
     options.automatic                       = false
     options.interval                        = 3600  # update normally only every hour
+    options.rate                            = ""
 
     pristine_options                        = options.dup
 
@@ -256,6 +263,10 @@ class JokeMachine # {{{
 
       opts.on("-r", "--read", "Read jokes that are stored in the DB") do |r|
         options.read = r
+      end
+
+      opts.on("-r", "--rate OPT", "Rate jokes that are stored in the DB for user account OPT") do |r|
+        options.rate = r
       end
 
       opts.separator ""
@@ -304,7 +315,7 @@ class JokeMachine # {{{
 
       # Another typical switch to print the version.
       opts.on_tail("--version", "Show version") do
-        puts OptionParser::Version.join('.')
+        puts `git describe --tags`
         exit
       end
     end
