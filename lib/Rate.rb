@@ -25,6 +25,9 @@
 require 'Extensions.rb'
 require 'Logger.rb'
 
+require 'models/User.rb'
+require 'models/Vote.rb'
+
 # }}}
 
 
@@ -34,28 +37,30 @@ class Rate # {{{
   # Constructor
   #
   # @param  [Joke]    joke     Requires an instantiated output object of type Joke
-  def initialize username = nil, jokes = nil # {{{
+  def initialize options = nil, username = nil, jokes = nil # {{{
 
     # Pre-condition check {{{
+    raise ArgumentError, "Have no options object" if( options.nil? )
     raise ArgumentError, "Have no user account details" if( username.nil? )
     raise ArgumentError, "Have no jokes object" if( jokes.nil? )
     # }}}
 
     # Main
+    @log                      = Logger.new( options )
     @username                 = username
     @jokes                    = jokes
 
     # 0 = most dislike  ; 5 = most like
     # This scale may have an statistical bias
-    @likert_scale             = %w[
+    @likert_scale             = [
                                     "Strongly dislike",
                                     "Dislike",
                                     "Neither like nor dislike",
                                     "Like",
                                     "Strongly like"
-                                  ]
+                                ]
 
-    @phrase_completion_scale  = %w[
+    @phrase_completion_scale  = [
                                     "Definition of not funny",
                                     "Strongly not funny",
                                     "Stupid",
@@ -67,7 +72,7 @@ class Rate # {{{
                                     "Really funny",
                                     "Hilarious",
                                     "The most funny joke ever",
-                                  ]
+                                ]
 
     @percent_scale            = [ 0, 100 ]
 
@@ -76,6 +81,47 @@ class Rate # {{{
 
   # The function stores rating value for a given joke in the database
   def unrated # {{{
+
+    # answer = ask( "Please rate the joke (0 = totally unfunny, 100 = Hilarious", :percent )
+
+    user = User.first( :username => @username )
+    if( user.nil? )
+      @log.message :warning, "Couldn't find the user '#{@username}' in the DB, creating a new account"
+      user          = User.new
+      user.username = @username
+      user.save!
+    end
+
+    @log.message :debug, "Using user #{user.username.to_s} which has #id #{user.id.to_s} to rate jokes"
+
+    # get rid of jokes that we already rated
+    joke_ids = []
+    votes     = Vote.all( :username => @username )
+    votes.each { |v| joke_ids << v.joke_id }
+
+    @jokes.delete_if do |j|
+      joke_ids.include?( j.id )
+    end 
+
+    # Only vote on new unvoted jokes
+    @log.message :info, "Going to show you #{@jokes.length.to_s} jokes you haven't rated yet"
+    @jokes.each_with_index do |joke, index|
+
+      @log.message :info, "Showing you joke ##{index.to_s} of #{@jokes.length.to_s}\n"
+
+      vote            = Vote.new
+      vote.joke_id    = joke.id
+      vote.username   = @username 
+
+      puts joke.to_s
+      puts "\n"
+      answer          = ask( "Please rate the joke (0 = totally unfunny, 100 = Hilarious", :percent )
+      vote.percent    = answer.to_i
+      vote.save!
+
+      system( "clear" )
+    end
+
   end # }}}
 
 
@@ -127,21 +173,29 @@ class Rate # {{{
   # @returns  [Integer]                   Integer, representing the desired percentage
   def get_choice_from_range question, from = @percent_scale.first, to = @percent_scale.last # {{{
     selection = nil
+    finished  = false
 
-    while( selection.nil? )
+    while( not finished )
 
-      print "#{question.to_s} : \n"
+      print "#{question.to_s} "
 
-      printf( "Allowed range: (%-3i - $-3i)\n", from, to )
-
-      print "\n>> "
+      printf( "(%i-%i) : ", from, to )
+      STDOUT.flush
       selection                  = ( ( STDIN.gets ).chomp )
 
-      begin
-        selection                = selection.to_i
-      rescue
-        selection                = nil
-        puts "Selection has to be numerical and of type integer!"
+      if( selection == "" )
+        puts "The selection needs to be of type integer!"
+      else
+        if( selection.tr( "0-9", "" ) == "" )
+          selection = selection.to_i
+          if( selection >= from and selection <= to )
+            finished = true
+          else
+            puts "The selection needs to be inside the range from #{from.to_s} to #{to.to_s}!"
+          end
+        else
+          puts "The input can only be of type integer"
+        end
       end
 
     end # of while
@@ -173,14 +227,13 @@ class Rate # {{{
       when :phrase
         answer = get_choice_from_listing( question, @phrase_completion_scale )
       when :percent
-        answer = get_choice_from_range( question, @percent_scale.first, @percent_scale.last )
+        answer = get_choice_from_range( question )
     end
 
     # Post condition check
 
     answer
   end # }}}
-
 
 end # of class Rate }}}
 

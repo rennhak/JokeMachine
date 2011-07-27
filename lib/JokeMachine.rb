@@ -122,7 +122,7 @@ class JokeMachine # {{{
 
         @log.message :info, "Rating jokes for the user account '#{@options.username}'"
         @jokes    = Joke.all
-        @rate     = Rate.new( @options.username, @jokes )
+        @rate     = Rate.new( @options, @options.username, @jokes )
         @rate.unrated
 
       end # of if( @options.rate )
