@@ -109,10 +109,10 @@ class JokeMachine # {{{
 
       # This should maybe be in a client app instead
       if( @options.read )
-        @jokes    = ( Joke.all ).reverse
-        @filter   = Filter.new( @options, @options.username, @jokes )
-        @jokes    = @filter.train
-        @display  = Display.new( @jokes )
+        @jokes                    = ( Joke.all ).reverse
+        @filter                   = Filter.new( @options, @options.username, @jokes )
+        @jokes                    = @filter.train
+        @display                  = Display.new( @jokes )
         @display.to_stdout
       end
 
@@ -124,8 +124,8 @@ class JokeMachine # {{{
         end # of if( @options.username == "" )
 
         @log.message :info, "Rating jokes for the user account '#{@options.username}'"
-        @jokes    = Joke.all
-        @rate     = Rate.new( @options, @options.username, @jokes )
+        @jokes                    = ( Joke.all ).reverse
+        @rate                     = Rate.new( @options, @options.username, @jokes )
         @rate.unrated
 
       end # of if( @options.rate )
