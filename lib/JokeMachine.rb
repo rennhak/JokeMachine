@@ -257,6 +257,7 @@ class JokeMachine # {{{
     options.interval                        = 3600  # update normally only every hour
     options.rate                            = false
     options.username                        = ""
+    options.manual_input                    = false
 
     pristine_options                        = options.dup
 
@@ -283,6 +284,10 @@ class JokeMachine # {{{
       end
 
       opts.on("-u", "--username OPT", "Use username OPT") do |u|
+        options.username = u
+      end
+
+      opts.on("-m", "--manual-input", "Input a joke manually to the Database") do |u|
         options.username = u
       end
 
