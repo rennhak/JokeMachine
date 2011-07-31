@@ -1,5 +1,5 @@
                                     Joke Machine
-                              Version 0.0.3
+                              Version 0.0.4
 
 
 
@@ -16,6 +16,7 @@ FEATURES
     o  Supports flexible templates to handle different websites
     o  Supports voting on jokes
     o  Supports Bayes filter to sort jokes according to funnyness
+    o  Supports manual joke input
 
   o  Feature Providing Base Libraries
     o  Downloads content based on config files

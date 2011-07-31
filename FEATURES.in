@@ -13,6 +13,7 @@
 ** Supports flexible templates to handle different websites
 ** Supports voting on jokes
 ** Supports Bayes filter to sort jokes according to funnyness
+** Supports manual joke input
 
 * Feature Providing Base Libraries
 ** Downloads content based on config files
