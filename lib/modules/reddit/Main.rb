@@ -30,12 +30,12 @@ require 'dm-migrations'
 require 'json'
 
 # Require custom Joke ADT
-require 'models/Joke.rb'
+load 'models/Joke.rb'
 
 # Require one way hash function for content identification
 require 'digest'
 
-require 'Downloader.rb'
+load 'Downloader.rb'
 
 
 # }}}

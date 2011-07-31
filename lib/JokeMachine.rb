@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/ruby19
 #
 
 
@@ -236,12 +236,10 @@ class JokeMachine # {{{
     processes.each do |config_file|
 
       config_filename    = @config.config_dir + "/" + config_file + ".yaml"
-      @log.message :info, "Loading config file (#{config_filename})"
-
-      config                     = read_config( config_filename )
+      config             = read_config( config_filename )
 
       # Require module
-      require "modules/#{config.module.to_s}/Main.rb"
+      load "modules/#{config.module.to_s}/Main.rb"
 
       # Create instance and get new data
       instance                    = eval( "#{config.module.capitalize.to_s}.new( @log, config, @config.db_type, @config.db_path )" )
@@ -464,13 +462,34 @@ class JokeMachine # {{{
     raise ArgumentError, "Filename argument should be of type string, but it is (#{filename.class.to_s})" unless( filename.is_a?(String) )
 
     # Main
+    @log.message :debug, "Loading this config file: #{filename.to_s}"
     result = File.open( filename, "r" ) { |file| YAML.load( file ) }                 # return proc which is in this case a hash
+    result = hashes2ostruct( result ) 
 
     # Post-condition check
     raise ArgumentError, "The function should return an OpenStruct, but instead returns a (#{result.class.to_s})" unless( result.is_a?( OpenStruct ) )
 
     result
   end # }}}
+
+
+  # http://www.dribin.org/dave/blog/archives/2006/11/17/hashes_to_ostruct/
+  # Dave Dribin 
+  def hashes2ostruct(object)
+    return case object
+    when Hash
+      object = object.clone
+      object.each do |key, value|
+        object[key] = hashes2ostruct(value)
+      end
+      OpenStruct.new(object)
+    when Array
+      object = object.clone
+      object.map! { |i| hashes2ostruct(i) }
+    else
+      object
+    end
+  end
 
 end # of class JokeMachine }}}
 
