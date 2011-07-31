@@ -130,8 +130,100 @@ class JokeMachine # {{{
 
       end # of if( @options.rate )
 
+      # Input joke manually
+      if( @options.manual_input )
+        while( true )
+          manual_input
+          answer = get_choice_from_bipolar( "More input?" )
+          break unless( answer ) 
+        end
+      end # of if( @options.manual_input )
+
     end # of unless( options.nil? )
   end # of def initalize }}}
+
+
+  # The function handles when a user wants to input a joke directly via the CLI
+  def manual_input # {{{
+
+    # Convenience shorthand 
+    yellow = Proc.new { |m| @log.colorize( "Yellow", m.to_s ) }
+
+    STDOUT.flush
+    #$/ = '\r\n'
+
+    # Aquire data
+    puts yellow.call( "\n>> Please type your [[ JOKE ]] here and after you are finished hit CTRL+D twice\n" )
+
+    # The method over the re-def over $/ = "END" works too, but mangles later STDIN.gets somehow - why?
+    joke = ""
+    while true
+      begin
+        input = STDIN.sysread(1)
+        joke += input
+      rescue EOFError
+        break
+      end
+    end
+
+    puts yellow.call( ">> TITLE of this joke: " )
+    title = STDIN.readline.chomp
+
+    puts yellow.call( ">> URL where you found this joke (Press enter to accept previous URL: #{@_prev_url.to_s}): " )
+    url = STDIN.readline
+    if( url =~ %r{^\n$} )
+      puts yellow.call( ">> Using previous URL ( #{@_prev_url.to_s} )" )
+      url = @_prev_url 
+    else
+      url = url.chomp
+    end
+
+    @_prev_url = url
+
+    puts yellow.call( ">> Who posted or authored this joke: " )
+    author = STDIN.readline.chomp
+
+
+    new           = Joke.new
+    new.content   = joke.chomp
+    new.title     = title
+    new.url       = url
+    new.author    = author
+
+    puts ""
+    puts "-"*30
+    puts "Joke object:"
+    puts ""
+    p new
+    puts "-"*30
+    answer        = get_choice_from_bipolar( "Do you want to store this joke to Database? "  )
+
+    if( answer ) 
+      res = new.save!
+      answer = ( res ) ? ( "Success !" ) : ( "Failure !" )
+      puts yellow.call( answer )
+    end
+  end # of def manual_input }}}
+
+
+  # The function ask will take a simple string query it on the CMD and wait for an answer e.g. "y" (or enter)
+  #
+  # @param   [String]   question          String, representing the question you want to query.
+  # @param   [Array]    allowed_answers   Array, representing the allowed answers
+  # @returns [Boolean]                    Boolean, true for yes, false for no
+  def get_choice_from_bipolar question, allowed_answers = %w[ y n ENTER ] # {{{
+    print "#{question.to_s} [#{allowed_answers.join(", ")}] : "
+    STDOUT.flush
+    answer = STDIN.gets.to_s
+    if( answer =~ %r{^\n$}i )
+      answer = "enter"
+    else
+      answer = answer.chomp.downcase
+    end
+
+    return true  if( answer =~ %r{y|enter}i )
+    return false if( answer =~ %r{n}i )
+  end # of def ask }}}
 
 
   # The function updates all given modules provided from the CLI input
@@ -287,8 +379,8 @@ class JokeMachine # {{{
         options.username = u
       end
 
-      opts.on("-m", "--manual-input", "Input a joke manually to the Database") do |u|
-        options.username = u
+      opts.on("-m", "--manual-input", "Input a joke manually to the Database") do |m|
+        options.manual_input = m
       end
 
       opts.separator ""
