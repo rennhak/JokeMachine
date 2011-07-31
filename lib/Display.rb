@@ -22,8 +22,8 @@
 # Libraries {{{
 
 # Custom includes (changes object behaviors)
-require 'Extensions.rb'
-require 'Logger.rb'
+load 'Extensions.rb'
+load 'Logger.rb'
 
 # }}}
 

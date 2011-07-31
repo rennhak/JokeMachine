@@ -25,12 +25,12 @@ require 'rubygems'
 require 'classifier'
 
 # Custom includes (changes object behaviors)
-require 'Extensions.rb'
-require 'Logger.rb'
+load 'Extensions.rb'
+load 'Logger.rb'
 
-require 'models/Joke.rb'
-require 'models/User.rb'
-require 'models/Vote.rb'
+load 'models/Joke.rb'
+load 'models/User.rb'
+load 'models/Vote.rb'
 
 # }}}
 

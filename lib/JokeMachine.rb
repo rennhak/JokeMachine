@@ -38,16 +38,16 @@ require 'dm-core'
 require 'dm-migrations'
 
 # Custom includes (changes object behaviors)
-require 'Extensions.rb'
-require 'Logger.rb'
-require 'Display.rb'
-require 'Rate.rb'
-require 'Filter.rb'
+load 'Extensions.rb'
+load 'Logger.rb'
+load 'Display.rb'
+load 'Rate.rb'
+load 'Filter.rb'
 
 # Require custom Joke ADT for searching
-require 'models/Joke.rb'
-require 'models/Website.rb'
-require 'models/User.rb'
+load 'models/Joke.rb'
+load 'models/Website.rb'
+load 'models/User.rb'
 
 # }}}
 
@@ -139,6 +139,9 @@ class JokeMachine # {{{
         end
       end # of if( @options.manual_input )
 
+      if( @options.joke_count )
+        puts "Currently we have >> #{Joke.all.length.to_s} << jokes in the database."
+      end
     end # of unless( options.nil? )
   end # of def initalize }}}
 
@@ -350,6 +353,7 @@ class JokeMachine # {{{
     options.rate                            = false
     options.username                        = ""
     options.manual_input                    = false
+    options.joke_count                      = false
 
     pristine_options                        = options.dup
 
@@ -381,6 +385,10 @@ class JokeMachine # {{{
 
       opts.on("-m", "--manual-input", "Input a joke manually to the Database") do |m|
         options.manual_input = m
+      end
+
+      opts.on("-j", "--joke-count", "Count how many jokes we have in the Database") do |j|
+        options.joke_count = j
       end
 
       opts.separator ""
