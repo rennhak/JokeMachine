@@ -1,6 +1,6 @@
 ---
 
-type:                     Text
+type:                     JSON
 name:                     Reddit Jokes Group
 module:                   reddit
 base_url:                 http://www.reddit.com
