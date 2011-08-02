@@ -1,4 +1,4 @@
-#!/usr/bin/ruby19
+#!/usr/bin/env ruby
 #
 
 
