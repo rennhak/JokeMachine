@@ -11,6 +11,6 @@ refresh_delay:            30                                                # in
 user_agent:               Ruby Jokes Crawler                                # Never lie about this to reddit
 download_amount:          100                                               # get 100 jokes (1-n)
 rss_url:                  
-  highest_voted:          http://www.sickipedia.org/feeds/?1262760707.xml   # highest voted
-  latest_jokes:           http://www.sickipedia.org/feeds/?1262760708.xml   # latest jokes
+  highest_voted:          /feeds/?1262760707.xml   # highest voted
+  latest_jokes:           /feeds/?1262760708.xml   # latest jokes
 
