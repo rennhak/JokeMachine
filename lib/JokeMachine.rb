@@ -473,23 +473,28 @@ class JokeMachine # {{{
   end # }}}
 
 
-  # http://www.dribin.org/dave/blog/archives/2006/11/17/hashes_to_ostruct/
-  # Dave Dribin 
-  def hashes2ostruct(object)
+  # This function turns a nested hash into a nested open struct
+  #
+  # @author Dave Dribin
+  # Reference: http://www.dribin.org/dave/blog/archives/2006/11/17/hashes_to_ostruct/
+  #
+  # @param    [Object]    object    Value can either be of type Hash or Array, if other then it is returned and not changed
+  # @returns  [OStruct]             Returns nested open structs
+  def hashes2ostruct object # {{{
+
     return case object
     when Hash
       object = object.clone
-      object.each do |key, value|
-        object[key] = hashes2ostruct(value)
-      end
-      OpenStruct.new(object)
+      object.each { |key, value| object[key] = hashes2ostruct(value) }
+      OpenStruct.new( object )
     when Array
       object = object.clone
       object.map! { |i| hashes2ostruct(i) }
     else
       object
     end
-  end
+
+  end # of def hashes2ostruct }}}
 
 end # of class JokeMachine }}}
 
