@@ -1,0 +1,14 @@
+---
+
+type:                     RSS
+name:                     Jokes4all.com
+module:                   jokes4all
+base_url:                 http://jokes4all.net
+robots:                   http://jokes4all.net/robots.txt
+jokes_url:                
+get_json:                 
+refresh_delay:            30                                                # in sec
+user_agent:               Ruby Jokes Crawler                                # Never lie about this to reddit
+download_amount:          25                                                # doesn't mean anything here since we always get 100 jokes per url
+rss_url:                  rss/160010011/jokes.xml
+
