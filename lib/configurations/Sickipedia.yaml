@@ -9,8 +9,8 @@ jokes_url:
 get_json:                 
 refresh_delay:            30                                                # in sec
 user_agent:               Ruby Jokes Crawler                                # Never lie about this to reddit
-download_amount:          100                                               # get 100 jokes (1-n)
+download_amount:          25                                                # doesn't mean anything here since we always get 100 jokes per url
 rss_url:                  
-  highest_voted:          /feeds/?1262760707.xml   # highest voted
-  latest_jokes:           /feeds/?1262760708.xml   # latest jokes
+  highest_voted:          feeds/?1262760707.xml   # highest voted
+  latest_jokes:           feeds/?1262760708.xml   # latest jokes
 

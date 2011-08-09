@@ -26,8 +26,9 @@ require 'datamapper'
 require 'dm-core'
 require 'dm-migrations'
 
-# Handle Reddit Data format
+# Handle Sickipedia Data format
 require 'rss'
+require 'nokogiri'
 
 # Require custom Joke ADT
 load 'models/Joke.rb'
@@ -63,10 +64,13 @@ class Sickipedia # {{{
     @db_type, @db_path  = db_type, db_path
     data_mapper_init( "sqlite3", "data/databases/test.sqlite3", true ) if( @db_type.nil? or @db_path.nil? )
 
-    @highest_voted          = @config.base_url + "/" + @config.rss_url.highest_voted
-    @latest_jokes           = @config.base_url + "/" + @config.rss_url.latest_jokes
+    @urls                   = []
+
+    @urls                   << @config.base_url + "/" + @config.rss_url.highest_voted
+    @urls                   << @config.base_url + "/" + @config.rss_url.latest_jokes
 
     @jokes        = []
+
   end # of def initalize }}}
 
 
@@ -105,114 +109,105 @@ class Sickipedia # {{{
   #
   # @param    [String]    url   Needs an string argument representing the URI where to download the JSON source.
   # @returns  [Array]           Result returned is an Array ([ jokes, metadata ]) where each jokes array contains Hashes as elements, which hold the essential joke data and metadata is the output from Downloader::get.
-  def get url = @url # {{{
+  def get urls = @urls # {{{
 
     # Pre-condition
-    raise ArgumentError, "The url argument should be of type string, but is (#{url.class.to_s})" unless( url.is_a?(String) )
-
-    p url
-
-    exit
+    raise ArgumentError, "The urls argument should be of type Array, but is (#{urls.class.to_s})" unless( urls.is_a?(Array) )
 
     # Main
     jokes       = []
+    final       = []
 
     downloader  = Downloader.new
-    @log.message :info, "Downloading content from #{@url.to_s}"
-    toc         = downloader.get( url )
-    json        = JSON.parse( toc.content.join( "\n" ) )
-    data        = json[ "data" ][ "children" ]
+    toc         = []
 
-    data.each do |hash|
-      if( hash[ "kind" ] == "t3" )
-        item = hash[ "data" ]
+    urls.each do |url|
+      @log.message :info, "Downloading content from #{url.to_s}"
+      response    = downloader.get( url )
+      toc         << response
+    end
 
-        # Provided but not needed: 
-        #
-        # item[ "name"          ]   # "name"=>"t3_inire"
-        # item[ "num_comments"  ] # "num_comments"=>4
-        # item[ "thumbnail"     ] # "thumbnail"=>""
-        # item[ "domain"        ] # "domain"=>"self.Jokes"
-        # item[ "id"            ] # "id"=>"inire"
-        # item[ "media"         ] # "media"=>nil
-        # item[ "clicked"       ] # "clicked"=>false
-        # item[ "subreddit_id"  ] # "subreddit_id"=>"t5_2qh72"
-        # item[ "selftext_html" ] # "selftext_html"=>"&lt;!-- SC_OFF --&gt;&lt;div class=\"md\"&gt;&lt;p&gt;The bartender looks the grasshopper up and down for a minute until he finally says, \"you know, I'm pretty sure we have a drink named after you.\"\nThe grasshopper replies, \"Really?! You guys got a drink named Dave?!\"&lt;/p&gt;&lt;/div&gt;&lt;!-- SC_ON --&gt;"
-        # item[ "levenshtein"   ] # "levenshtein"=>nil
-        # item[ "media_embed"   ] #  "media_embed"=>{}
-        # item[ "saved"         ] # "saved"=>false
-        # item[ "created"       ] # "created"=>1310512579.0
-        # item[ "hidden"        ] # "hidden"=>false
-        # item[ "likes"         ] # "likes"=>nil
-        # item[ "subreddit"     ] # "subreddit"=>"Jokes"
-        # item[ "permalink"     ] # "permalink"=>"/r/Jokes/comments/inire/a_grasshopper_wandered_into_a_bar_and_sat_down/"
-        # joke[ "score"         ] = item[ "score"         ] # "score"=>7    this is just a simple diff between ups - downs
+    toc.each do |r|
 
-        if( item[ "is_self"       ] )  # "is_self"=>true
-          joke = Hash.new
+      rss         = RSS::Parser.parse( r.content.join( "\n" ), false )
+      
+      jokes.clear
 
-          joke[ "joke_id"       ] = item[ "name"          ]
-          joke[ "url"           ] = item[ "url"           ]
-          joke[ "over_18"       ] = item[ "over_18"       ] # "over_18"=>false
-          joke[ "ups"           ] = item[ "ups"           ] # "ups"=>17
-          joke[ "title"         ] = item[ "title"         ] # "title"=>"Rich man, Poor man"
-          joke[ "author"        ] = item[ "author"        ] # "author"=>"madzkaleel"
-          joke[ "created_utc"   ] = item[ "created_utc"   ] # "created_utc"=>1310500570.0
-          joke[ "url"           ] = item[ "url"           ] # "url"=>"http://www.reddit.com/r/Jokes/comments/inpz3/rich_man_poor_man/"
-          joke[ "selftext"      ] = item[ "selftext"      ] # "selftext"=>"The bartender looks the grasshopper up and down for a minute until he finally says, \"you know, I'm pretty sure we have a drink named after you.\" \nThe grasshopper replies, \"Really?! You guys got a drink named Dave?!\""
-          joke[ "downs"         ] = item[ "downs"         ] # "downs"=>19
+      rss.items.each do |item|
+        title           = item.title
+        content_html    = Nokogiri::HTML( item.description.to_s )
+        content         = content_html.inner_text
+        url             = item.about
+        uploaded        = ( ( DateTime.parse( item.dc_date.to_s ) ).to_time ).utc
 
-          jokes << joke
-        else
-          raise ArgumentError, "This joke is not of type 'self' but something else (#{item["is_self"].to_s})"
-        end # of if( item[ "is_self" ] )
-      else
-        raise ArgumentError, "Seems the Reddit JSON spec has changed. Unexpected format of data structure error."
-      end # of if( hash[ "kind" ] == "t3" )
-    end # of data.each do |hash|
+        joke = Hash.new
+
+        joke[ "joke_id"       ] = ""
+        joke[ "url"           ] = url
+        joke[ "over_18"       ] = true # "over_18"=>false
+        joke[ "title"         ] = title # "title"=>"Rich man, Poor man"
+        joke[ "created_utc"   ] = uploaded
+
+        joke[ "ups"           ] = 0 # "ups"=>17
+        joke[ "author"        ] = "" # "author"=>"madzkaleel"
+        joke[ "selftext"      ] = content  # "selftext"=>"The bartender looks the grasshopper up and down for a minute until he finally says, \"you know, I'm pretty sure we have a drink named after you.\" \nThe grasshopper replies, \"Really?! You guys got a drink named Dave?!\""
+        joke[ "downs"         ] = 0 # "downs"=>19
+
+        jokes << joke
+      end
+
+      final << [jokes, r]
+    end # of toc.each
 
     # Post-condition
     raise ArgumentError, "Result should be of type Array, but is (#{jokes.class.to_s})" unless( jokes.is_a?( Array ) )
 
-    [ jokes, toc ]
+    final
   end # of get }}}
 
 
   # The function takes the intermediate data from get_jokes and turns the content into proper joke ADT's
   #
-  # @param    [Array]    data   Input needs to match the specific output from the get_jokes function.
+  # @param    [Array]    inputs Input needs to match the specific output from the get_jokes function.
   # @returns  [Array]           Returns an Array containing proper instanciated Joke ADT objects
-  def make input = get # {{{
+  def make inputs = get # {{{
     # Pre-condition
-    raise ArgumentError, "Expecting input to be of type Array, but it is (#{input.class.to_s})" unless( input.is_a?(Array) )
+    raise ArgumentError, "Expecting input to be of type Array, but it is (#{inputs.class.to_s})" unless( inputs.is_a?(Array) )
 
     # Main
     #
     # We expect this format currently:
-    # [ jokes_array_containing_hashes, jokes_website_metadata ]
-    data, metadata = *input
+    # [ [ jokes_array_containing_hashes, jokes_website_metadata ], ...] 
+    result = []
 
-    jokes = []
-    data.each do |j|
-      jokes << to_joke( j )
-    end
+    inputs.each do |input|
+      data, metadata = *input
 
-    # Set metadata for each joke ADT
-    jokes.each do |joke|
-      joke.last_modified      = metadata.last_modified
-      joke.charset            = metadata.charset
-      joke.content_encoding   = metadata.content_encoding
-      joke.content_type       = metadata.content_type
-      joke.downloaded_at      = metadata.date
+      jokes = []
+      data.each do |j|
+        jokes << to_joke( j )
+      end # of data.each
 
-      joke.content_sha1sum    = Digest::SHA1.hexdigest( joke.content )
-      joke.title_sha1sum      = Digest::SHA1.hexdigest( joke.title   )
-    end # jokes.each
+      # Set metadata for each joke ADT
+      jokes.each do |joke|
+        joke.last_modified      = metadata.last_modified
+        joke.charset            = metadata.charset
+        joke.content_encoding   = metadata.content_encoding
+        joke.content_type       = metadata.content_type
+        joke.downloaded_at      = metadata.date
+
+        joke.content_sha1sum    = Digest::SHA1.hexdigest( joke.content )
+        joke.title_sha1sum      = Digest::SHA1.hexdigest( joke.title   )
+      end # jokes.each
+
+      result.concat( jokes )
+
+    end # of inputs.each
 
     # Post-condition
-    raise ArgumentError, "Expecting output to be of type Array, but it is (#{jokes.class.to_s})" unless( jokes.is_a?(Array) )
+    raise ArgumentError, "Expecting output to be of type Array, but it is (#{result.class.to_s})" unless( result.is_a?(Array) )
 
-    jokes
+    result
   end # of make }}}
 
 
@@ -249,7 +244,7 @@ class Sickipedia # {{{
     joke.content        = hash[ "selftext"            ]
     joke.downs          = hash[ "downs"               ]
     
-    joke.source         = "Reddit Jokes Group"
+    joke.source         = "Sickipedia Jokes"
 
     # Post-condition
     raise ArgumentError, "Return type needs to be of type Joke, but got (#{joke.class.to_s})" unless( joke.is_a?(Joke) )
