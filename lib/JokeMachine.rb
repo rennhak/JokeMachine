@@ -110,8 +110,12 @@ class JokeMachine # {{{
       # This should maybe be in a client app instead
       if( @options.read )
         @jokes                    = ( Joke.all ).reverse
-        @filter                   = Filter.new( @options, @options.username, @jokes )
-        @jokes                    = @filter.train
+
+        unless( @options.username == "" )
+          @filter                   = Filter.new( @options, @options.username, @jokes )
+          @jokes                    = @filter.train
+        end
+
         @display                  = Display.new( @jokes )
         @display.to_stdout
       end
