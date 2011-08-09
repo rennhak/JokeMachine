@@ -147,6 +147,8 @@ class JokeMachine # {{{
 
 
   # The function handles when a user wants to input a joke directly via the CLI
+  #
+  # @returns  [Joke]      Returns a newly created joke object with the joke input data added
   def manual_input # {{{
 
     # Convenience shorthand 
@@ -186,7 +188,6 @@ class JokeMachine # {{{
     puts yellow.call( ">> Who posted or authored this joke: " )
     author = STDIN.readline.chomp
 
-
     new           = Joke.new
     new.content   = joke.chomp
     new.title     = title
@@ -206,6 +207,8 @@ class JokeMachine # {{{
       answer = ( res ) ? ( "Success !" ) : ( "Failure !" )
       puts yellow.call( answer )
     end
+
+    new
   end # of def manual_input }}}
 
 
