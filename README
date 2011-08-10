@@ -1,5 +1,5 @@
                                     Joke Machine
-                              Version 0.0.4
+                              Version 0.0.5
 
 
 
@@ -20,6 +20,11 @@ FEATURES
 
   o  Feature Providing Base Libraries
     o  Downloads content based on config files
+
+  o  Ressources
+    o  Reddit /r/jokes
+    o  Sickipedia
+    o  Jokes4All
 
   o  Development
 
