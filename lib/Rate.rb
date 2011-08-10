@@ -116,8 +116,14 @@ class Rate # {{{
       puts joke.to_s
       puts "\n"
       answer          = ask( "Please rate the joke (0 = totally unfunny, 100 = Hilarious", :percent )
-      vote.percent    = answer.to_i
-      vote.save!
+
+      if( answer.is_a?( Numeric ) )
+        vote.percent    = answer.to_i
+        vote.save!
+      else
+        @log.message :error, "Skipping this joke"
+        sleep 0.2
+      end
 
       system( "clear" )
     end
@@ -184,7 +190,8 @@ class Rate # {{{
       selection                  = ( ( STDIN.gets ).chomp )
 
       if( selection == "" )
-        puts "The selection needs to be of type integer!"
+        # puts "The selection needs to be of type integer!"
+        finished = true
       else
         if( selection.tr( "0-9", "" ) == "" )
           selection = selection.to_i

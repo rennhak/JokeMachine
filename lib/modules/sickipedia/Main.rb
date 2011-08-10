@@ -138,7 +138,7 @@ class Sickipedia # {{{
         content_html    = Nokogiri::HTML( item.description.to_s )
         content         = content_html.inner_text
         url             = item.about
-        uploaded        = ( ( DateTime.parse( item.dc_date.to_s ) ).to_time ).utc
+        uploaded        = ( Time.parse( ( DateTime.parse( item.dc_date.to_s ) ).to_s ) ).utc
 
         joke = Hash.new
 
