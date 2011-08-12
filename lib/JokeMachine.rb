@@ -98,7 +98,7 @@ class JokeMachine # {{{
         if( @options.automatic )
           while
             update_modules
-            @log.message :info, "Sleeping #{@options.interval.to_s} seconds (#{@options.interval.to_f/(60*60)} hours)"
+            @log.message :info, "Sleeping #{@options.interval.to_s} seconds (#{@options.interval.to_f/(60*60)} hours - We currently have #{Joke.all.length.to_s} jokes in the Database)"
             sleep @options.interval
           end
         else
