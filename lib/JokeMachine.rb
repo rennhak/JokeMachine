@@ -96,9 +96,10 @@ class JokeMachine # {{{
       # Go through each module for updates
       unless( @options.process.empty? )
         if( @options.automatic )
-          while
+          while true
             update_modules
-            @log.message :info, "Sleeping #{@options.interval.to_s} seconds (#{@options.interval.to_f/(60*60)} hours - We currently have #{Joke.all.length.to_s} jokes in the Database)"
+            @log.message :info, "Sleeping #{@options.interval.to_s} seconds (#{@options.interval.to_f/(60*60)} hours)"
+            joke_count.to_a.sort.each { |source, count| printf( "%-20s | %6i\n", source, count ) }
             sleep @options.interval
           end
         else
@@ -148,6 +149,36 @@ class JokeMachine # {{{
       end
     end # of unless( options.nil? )
   end # of def initalize }}}
+
+
+  # The function count goes through the jokes database and counts the jokes according to their source
+  # 
+  # @returns  [Hash]      Returns a hash with "Total" and all other sources and their corresponding joke count
+  #
+  # FIXME: Use a proper SQL query for this.
+  def joke_count # {{{
+
+    @log.message :debug, "Entering count function"
+
+    jokes                               = Joke.all
+    sources                             = Hash.new
+
+    sources[ "Total" ]                  = jokes.length
+    sources[ "Manually Entered" ]       = 0
+
+    jokes.each do |j|
+      source                            = j.source
+
+      if( source == nil )
+        sources[ "Manually Entered" ]  += 1
+      else
+        sources[ source ]               = 0 if sources[ source ].nil?
+        sources[ source ]              += 1
+      end
+    end
+
+    sources
+  end # of def count }}}
 
 
   # The function handles when a user wants to input a joke directly via the CLI
