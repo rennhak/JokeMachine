@@ -43,7 +43,7 @@ load 'Downloader.rb'
 # The class Jokes4all takes care of the data handling from the Jokes4all site to our database.
 class Ebaumsworld # {{{
 
-  # Construcoptionstor for the Reddit joke source class
+  # Construcoptionstor for the Ebaumsworld joke source class
   #
   # @param [Logger]       logger
   # @param [OpenStruct]   config
@@ -58,16 +58,18 @@ class Ebaumsworld # {{{
     @log          = logger
     @config       = config
 
-    @log.message :debug, "Created Reddit class instance"
+    @log.message :debug, "Created Ebaumsworld class instance"
 
     @db_type, @db_path  = db_type, db_path
     data_mapper_init( "sqlite3", "data/databases/test.sqlite3", true ) if( @db_type.nil? or @db_path.nil? )
 
     @urls                   = []
 
-    @urls                   << @config.base_url + "/" + @config.jokes_url
+    @last_page              = 1
+    @urls                   << @config.base_url + "/" + @config.jokes_url + @last_page.to_s
 
-    @jokes        = []
+    @jokes                  = []
+
 
   end # of def initalize }}}
 
@@ -126,20 +128,65 @@ class Ebaumsworld # {{{
     end
 
     toc.each do |r|
-
-      rss         = RSS::Parser.parse( r.content.join( "\n" ), false )
-      
       jokes.clear
 
-      rss.items.each do |item|
+      # Lets get the links to the jokes
+      html              = Nokogiri::HTML( r.content.to_s )
+      content           = []
 
-        title           = item.title
-        content_html    = Nokogiri::HTML( item.description.to_s )
-        content         = content_html.inner_text
-        url             = item.link
 
-        date            = DateTime.parse( item.pubDate.to_s )
-        uploaded        = Time.parse( date.to_s ).utc
+      # Extract links to jokes and title of jokes on this page
+      html.xpath( "//div[@class='medialisting']/ul" ).each_with_index do |node, i|
+        next if( i > 2 )
+        tmp               = OpenStruct.new
+
+        # Extract topic and link
+        Nokogiri::HTML( node.to_s ).xpath( "//li[@class='details']/p/a" ).each do |n|
+          tmp.title       = n.inner_text
+          tmp.link        = n['href'] 
+        end
+
+        # Extract author and other metadata
+        Nokogiri::HTML( node.to_s ).xpath( "//li[@class='medialistingstats']/p/a" ).each do |n|
+          tmp.user        = n.inner_text.to_s.strip
+        end
+
+        content << tmp
+      end # of html.xpath
+
+      # content.each do |a|
+      #   printf( "%20s %40s %40s\n", a.user, a.link, a.title )
+      # end
+
+      # Extract content of each link
+      content.collect! do |item| # {{{
+        title, link, user   = item.title, item.link, item.user
+
+        @log.message :debug, "Downloading joke #{link.to_s}"
+        response = downloader.get( link )
+
+        Nokogiri::HTML( response.content.to_s ).xpath( "//div[@id='mediaContentSection']" ).each do |node|
+          item.content = node.inner_text
+        end
+
+        @log.message( :info, "Mandatory sleep between requests (#{@config.refresh_delay.to_s}s)" )
+        sleep @config.refresh_delay.to_i
+
+        item
+      end # of content.each # }}}
+
+
+      # content.each do |a|
+      #  printf( "%20s %40s %40s %50s\n\n", a.user, a.link, a.title, a.content )
+      # end
+
+      # Create Joke object
+      content.each do |item|
+        title, link, user, content    = item.title, item.link, item.user, item.content
+        url                           = item.link
+
+        date                          = DateTime.now  # eBaum's time measurement is weird. lets skip this for now
+        uploaded                      = Time.parse( date.to_s ).utc
 
         joke = Hash.new
 
@@ -150,7 +197,7 @@ class Ebaumsworld # {{{
         joke[ "created_utc"   ] = uploaded
 
         joke[ "ups"           ] = 0 # "ups"=>17
-        joke[ "author"        ] = "" # "author"=>"madzkaleel"
+        joke[ "author"        ] = user # "author"=>"madzkaleel"
         joke[ "selftext"      ] = content  # "selftext"=>"The bartender looks the grasshopper up and down for a minute until he finally says, \"you know, I'm pretty sure we have a drink named after you.\" \nThe grasshopper replies, \"Really?! You guys got a drink named Dave?!\""
         joke[ "downs"         ] = 0 # "downs"=>19
 
@@ -348,17 +395,19 @@ class Ebaumsworld # {{{
 
       if( @jokes.empty? )
         @jokes        = make
+        @last_page   += 1
       else
         # Get id of last joke from the page
         joke_id = ( @jokes.last ).joke_id
         break if( joke_id.nil? )
 
-        url           = @config.base_url + "/" + @config.jokes_url + "/" + @config.get_json + "?count=25&after=#{joke_id.to_s}"
-        tmp           = make( get( url ) )
+        url           = @config.base_url + "/" + @config.jokes_url + @last_page.to_s
+        tmp           = make( get( [ url ] ) )
         @jokes.concat( tmp )
+        @last_page   += 1
       end
 
-      amount -= 25  # there are 25 items on one page normally
+      amount -= 24  # there are 24 items on one page normally
 
       if( amount > 0 )
         delay = @config.refresh_delay.to_i

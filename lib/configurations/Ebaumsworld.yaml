@@ -8,5 +8,5 @@ robots:                   http://www.ebaumsworld.com/robots.txt
 jokes_url:                jokes/newest/page=
 refresh_delay:            30                                  # in sec
 user_agent:               Ruby Jokes Crawler                  # Never lie about this to anyone
-download_amount:          200                                 # get 100 jokes (1-n)
+download_amount:          25                                 # get 100 jokes (1-n)
 
