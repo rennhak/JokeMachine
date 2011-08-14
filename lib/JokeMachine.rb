@@ -145,7 +145,8 @@ class JokeMachine # {{{
       end # of if( @options.manual_input )
 
       if( @options.joke_count )
-        puts "Currently we have >> #{Joke.all.length.to_s} << jokes in the database."
+        puts "Currently we have >> #{Joke.all.length.to_s} << jokes in the database.\n"
+        joke_count.to_a.sort.each { |source, count| printf( "%-20s | %6i\n", source, count ) }
       end
     end # of unless( options.nil? )
   end # of def initalize }}}
