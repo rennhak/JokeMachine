@@ -137,7 +137,6 @@ class Ebaumsworld # {{{
 
       # Extract links to jokes and title of jokes on this page
       html.xpath( "//div[@class='medialisting']/ul" ).each_with_index do |node, i|
-        next if( i > 2 )
         tmp               = OpenStruct.new
 
         # Extract topic and link
@@ -154,27 +153,35 @@ class Ebaumsworld # {{{
         content << tmp
       end # of html.xpath
 
-      # content.each do |a|
-      #   printf( "%20s %40s %40s\n", a.user, a.link, a.title )
-      # end
-
       # Extract content of each link
       content.collect! do |item| # {{{
         title, link, user   = item.title, item.link, item.user
 
-        @log.message :debug, "Downloading joke #{link.to_s}"
-        response = downloader.get( link )
+        # Skip downloading jokes we already stored in the DB
+        j_query = Joke.all( :title    => title, :author => user )
 
-        Nokogiri::HTML( response.content.to_s ).xpath( "//div[@id='mediaContentSection']" ).each do |node|
-          item.content = node.inner_text
+        unless( j_query.empty? )
+          @log.message :debug, "Skipping ,,#{title.to_s}'' since we already have that in the DB"
+
+          nil
+        else
+          @log.message :debug, "Downloading joke #{link.to_s}"
+          response = downloader.get( link )
+
+          Nokogiri::HTML( response.content.to_s ).xpath( "//div[@id='mediaContentSection']" ).each do |node|
+            item.content = node.inner_text
+          end
+
+          @log.message( :info, "Mandatory sleep between requests (#{@config.refresh_delay.to_s}s)" )
+          sleep @config.refresh_delay.to_i
+
+          item
         end
 
-        @log.message( :info, "Mandatory sleep between requests (#{@config.refresh_delay.to_s}s)" )
-        sleep @config.refresh_delay.to_i
-
-        item
       end # of content.each # }}}
 
+      # Get rid of nil's
+      content.compact!
 
       # content.each do |a|
       #  printf( "%20s %40s %40s %50s\n\n", a.user, a.link, a.title, a.content )
@@ -292,7 +299,7 @@ class Ebaumsworld # {{{
     joke.content        = hash[ "selftext"            ]
     joke.downs          = hash[ "downs"               ]
     
-    joke.source         = "Jokes4All Jokes"
+    joke.source         = "eBaum's World Jokes"
 
     # Post-condition
     raise ArgumentError, "Return type needs to be of type Joke, but got (#{joke.class.to_s})" unless( joke.is_a?(Joke) )
@@ -393,14 +400,10 @@ class Ebaumsworld # {{{
     # First iteration or not?
     while( amount > 0 )
 
-      if( @jokes.empty? )
+      if( ( @jokes.empty? ) and ( @last_page == 1 ) )
         @jokes        = make
         @last_page   += 1
       else
-        # Get id of last joke from the page
-        joke_id = ( @jokes.last ).joke_id
-        break if( joke_id.nil? )
-
         url           = @config.base_url + "/" + @config.jokes_url + @last_page.to_s
         tmp           = make( get( [ url ] ) )
         @jokes.concat( tmp )
