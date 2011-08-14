@@ -18,10 +18,11 @@
 * Feature Providing Base Libraries
 ** Downloads content based on config files
 
-* Ressources
-** Reddit /r/jokes
-** Sickipedia
-** Jokes4All
+* Supported Ressources
+** Reddit /r/jokes (via JSON)
+** Sickipedia (via RSS)
+** Jokes4All (via RSS)
+** eBaum's World (via HTML parsing)
 
 * Development
 

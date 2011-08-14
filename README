@@ -1,5 +1,5 @@
                                     Joke Machine
-                              Version 0.0.5
+                              Version 0.0.6
 
 
 
@@ -21,10 +21,11 @@ FEATURES
   o  Feature Providing Base Libraries
     o  Downloads content based on config files
 
-  o  Ressources
-    o  Reddit /r/jokes
-    o  Sickipedia
-    o  Jokes4All
+  o  Supported Ressources
+    o  Reddit /r/jokes (via JSON)
+    o  Sickipedia (via RSS)
+    o  Jokes4All (via RSS)
+    o  eBaum's World (via HTML parsing)
 
   o  Development
 
