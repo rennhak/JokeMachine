@@ -382,6 +382,7 @@ class JokeMachine # {{{
     options.verbose                         = false
     options.colorize                        = false
     options.process                         = []
+    options.groups                          = []
     options.debug                           = false
     options.db_path                         = "data/databases/test.sqlite3"
     options.db_type                         = "sqlite3"
@@ -450,6 +451,11 @@ class JokeMachine # {{{
       # Set of arguments
       opts.on("-p", "--process OPT", @configurations, "Process one or more detected configuration (OPT: #{ @configurations.sort.join(', ') })" ) do |d|
         options.process << d
+      end
+
+      # Set of arguments
+      opts.on("-g", "--groups OPT", @configurations, "Use only these groups for read and rate (OPT: #{ @configurations.sort.join(', ') })" ) do |d|
+        options.groups << d
       end
 
       # Boolean switch.
