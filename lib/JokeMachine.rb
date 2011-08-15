@@ -117,8 +117,7 @@ class JokeMachine # {{{
         @jokes = []
 
         @options.sources.each do |config_file|
-          cfn                       = @config.config_dir + "/" + config_file + ".yaml"
-          c                         = read_config( cfn )
+          c                         = read_config( @config.config_dir + "/" + config_file + ".yaml" )
           db_source_tag             = c.db_source_tag
 
           @jokes                    << Joke.all( :source => db_source_tag ).to_a
