@@ -49,12 +49,13 @@ class Ebaumsworld # {{{
   # @param [OpenStruct]   config
   # @param [String]       db_type This string represents the db connector used for DataMapper, e.g. "sqlite3"
   # @param [String]       db_path This string represents the db path used for DataMapper, e.g. "data/database/foo.sqlite3"
-  def initialize logger = nil, config = nil, db_type = nil, db_path = nil # {{{
+  def initialize options = nil, logger = nil, config = nil, db_type = nil, db_path = nil # {{{
     raise ArgumentError, "Need a valid logger instance" if( logger.nil? )
     raise ArgumentError, "Need a valid config instance" if( config.nil? )
     # raise ArgumentError, "db_type needs to be of type string" unless( db_type.is_a?( String ) )
     # raise ArgumentError, "db_path needs to be of type string" unless( db_path.is_a?( String ) )
 
+    @options      = options
     @log          = logger
     @config       = config
 
@@ -173,7 +174,11 @@ class Ebaumsworld # {{{
           end
 
           @log.message( :info, "Mandatory sleep between requests (#{@config.refresh_delay.to_s}s)" )
-          sleep @config.refresh_delay.to_i
+          if( @options.random_intervals )
+            sleep @config.refresh_delay.to_i
+          else
+            sleep ( @config.refresh_delay.to_i + rand( @options.random_interval_time ) )
+          end
 
           item
         end
@@ -413,8 +418,14 @@ class Ebaumsworld # {{{
       amount -= 24  # there are 24 items on one page normally
 
       if( amount > 0 )
-        delay = @config.refresh_delay.to_i
+        if( @options.random_intervals )
+          delay = @config.refresh_delay.to_i
+        else
+          delay = ( @config.refresh_delay.to_i + rand( @options.random_interval_time ) )
+        end
+
         @log.message :warning, "Mandatory refresh delay between requests, sleeping for #{delay.to_s} seconds"
+
         sleep delay
       end
     end

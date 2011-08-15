@@ -281,7 +281,7 @@ class JokeMachine # {{{
       load "modules/#{config.module.to_s}/Main.rb"
 
       # Create instance and get new data
-      instance                    = eval( "#{config.module.capitalize.to_s}.new( @log, config, @config.db_type, @config.db_path )" )
+      instance                    = eval( "#{config.module.capitalize.to_s}.new( @options, @log, config, @config.db_type, @config.db_path )" )
       amount                      = config.download_amount
 
       # Do we need to wait?
@@ -391,7 +391,8 @@ class JokeMachine # {{{
     options.username                        = ""
     options.manual_input                    = false
     options.joke_count                      = false
-    options.random_intervalls               = false
+    options.random_intervals                = false
+    options.random_interval_time            = 15
 
     pristine_options                        = options.dup
 
@@ -429,8 +430,8 @@ class JokeMachine # {{{
         options.joke_count = j
       end
 
-      opts.on("-r", "--random-intervalls", "Use random intervalls when downloading to mask our usage pattern") do |r|
-        options.random_intervalls = r
+      opts.on("-r", "--random-intervals", "Use random intervals when downloading to mask our usage pattern") do |r|
+        options.random_intervals = r
       end
 
       opts.separator ""

@@ -3,4 +3,7 @@
     <note priority="veryhigh" time="1313340456">
         Store jokes at certain intervals when downloading many &gt;1000
     </note>
+    <note priority="veryhigh" time="1313369688">
+        Implement random interval polling times for modules: sickipedia, jokes4all and reddit (ebaum's world is done)
+    </note>
 </todo>

@@ -50,12 +50,13 @@ class Sickipedia # {{{
   # @param [OpenStruct]   config
   # @param [String]       db_type This string represents the db connector used for DataMapper, e.g. "sqlite3"
   # @param [String]       db_path This string represents the db path used for DataMapper, e.g. "data/database/foo.sqlite3"
-  def initialize logger = nil, config = nil, db_type = nil, db_path = nil # {{{
+  def initialize options = nil, logger = nil, config = nil, db_type = nil, db_path = nil # {{{
     raise ArgumentError, "Need a valid logger instance" if( logger.nil? )
     raise ArgumentError, "Need a valid config instance" if( config.nil? )
     # raise ArgumentError, "db_type needs to be of type string" unless( db_type.is_a?( String ) )
     # raise ArgumentError, "db_path needs to be of type string" unless( db_path.is_a?( String ) )
 
+    @options      = options
     @log          = logger
     @config       = config
 
