@@ -173,12 +173,14 @@ class Ebaumsworld # {{{
             item.content = node.inner_text
           end
 
-          @log.message( :info, "Mandatory sleep between requests (#{@config.refresh_delay.to_s}s)" )
           if( @options.random_intervals )
-            sleep @config.refresh_delay.to_i
+            delay = @config.refresh_delay.to_i
           else
-            sleep( @config.refresh_delay.to_i + rand( @options.random_interval_time ) )
+            delay = @config.refresh_delay.to_i + rand( @options.random_interval_time )
           end
+
+          @log.message( :info, "Mandatory sleep between requests (#{delay}s)" )
+          sleep delay
 
           item
         end
