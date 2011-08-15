@@ -408,7 +408,7 @@ class JokeMachine # {{{
     options.manual_input                    = false
     options.joke_count                      = false
     options.random_intervals                = false
-    options.random_interval_time            = 15
+    options.random_interval_time            = 25
 
     pristine_options                        = options.dup
 
