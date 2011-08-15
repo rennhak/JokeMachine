@@ -13,4 +13,4 @@ download_amount:          25                                                # do
 rss_url:                  
   highest_voted:          feeds/?1262760707.xml   # highest voted
   latest_jokes:           feeds/?1262760708.xml   # latest jokes
-
+db_source_tag:            "Sickipedia Jokes"

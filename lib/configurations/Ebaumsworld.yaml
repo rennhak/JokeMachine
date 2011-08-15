@@ -9,4 +9,4 @@ jokes_url:                jokes/newest/page=
 refresh_delay:            30                                  # in sec
 user_agent:               Ruby Jokes Crawler                  # Never lie about this to anyone
 download_amount:          400                                 # get 100 jokes (1-n)
-
+db_source_tag:            "eBaum's World Jokes"

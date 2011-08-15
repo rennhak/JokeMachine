@@ -109,10 +109,26 @@ class JokeMachine # {{{
         end
       end # of unless( @options.process.empty? )
 
+      # Limit to certain joke sources 
+      if( @options.sources.empty? )
+        @jokes                    = ( Joke.all ).reverse
+      else
+        # We should use only specific sources
+        @jokes = []
+
+        @options.sources.each do |config_file|
+          cfn                       = @config.config_dir + "/" + config_file + ".yaml"
+          c                         = read_config( cfn )
+          db_source_tag             = c.db_source_tag
+
+          @jokes                    << Joke.all( :source => db_source_tag ).to_a
+          @log.message :debug, "Adding #{db_source_tag} to jokes result"
+          @jokes.flatten!
+        end
+      end
+
       # This should maybe be in a client app instead
       if( @options.read )
-        @jokes                    = ( Joke.all ).reverse
-
         unless( @options.username == "" )
           @filter                   = Filter.new( @options, @options.username, @jokes )
           @jokes                    = @filter.train
@@ -130,7 +146,6 @@ class JokeMachine # {{{
         end # of if( @options.username == "" )
 
         @log.message :info, "Rating jokes for the user account '#{@options.username}'"
-        @jokes                    = ( Joke.all ).reverse
         @rate                     = Rate.new( @options, @options.username, @jokes )
         @rate.unrated
 
@@ -382,7 +397,7 @@ class JokeMachine # {{{
     options.verbose                         = false
     options.colorize                        = false
     options.process                         = []
-    options.groups                          = []
+    options.sources                         = []
     options.debug                           = false
     options.db_path                         = "data/databases/test.sqlite3"
     options.db_type                         = "sqlite3"
@@ -454,8 +469,8 @@ class JokeMachine # {{{
       end
 
       # Set of arguments
-      opts.on("-g", "--groups OPT", @configurations, "Use only these groups for read and rate (OPT: #{ @configurations.sort.join(', ') })" ) do |d|
-        options.groups << d
+      opts.on("-s", "--sources OPT", @configurations, "Use only these sources for read and rate (OPT: #{ @configurations.sort.join(', ') })" ) do |d|
+        options.sources << d
       end
 
       # Boolean switch.

@@ -10,4 +10,4 @@ get_json:                 .json
 refresh_delay:            30                                  # in sec
 user_agent:               Ruby Jokes Crawler                  # Never lie about this to reddit
 download_amount:          200                                 # get 100 jokes (1-n)
-
+db_source_tag:            "Reddit Jokes Group"
