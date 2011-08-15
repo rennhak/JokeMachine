@@ -14,6 +14,7 @@
 ** Supports voting on jokes
 ** Supports Bayes filter to sort jokes according to funnyness
 ** Supports manual joke input
+** Flexible source selection for reading and rating
 
 * Feature Providing Base Libraries
 ** Downloads content based on config files

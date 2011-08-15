@@ -1,5 +1,5 @@
                                     Joke Machine
-                              Version 0.0.6
+                              Version 0.0.7
 
 
 
@@ -17,6 +17,7 @@ FEATURES
     o  Supports voting on jokes
     o  Supports Bayes filter to sort jokes according to funnyness
     o  Supports manual joke input
+    o  Flexible source selection for reading and rating
 
   o  Feature Providing Base Libraries
     o  Downloads content based on config files
