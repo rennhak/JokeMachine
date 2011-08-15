@@ -421,9 +421,9 @@ class Ebaumsworld # {{{
 
       if( amount > 0 )
         if( @options.random_intervals )
-          delay = @config.refresh_delay.to_i
-        else
           delay = ( @config.refresh_delay.to_i + rand( @options.random_interval_time ) )
+        else
+          delay = @config.refresh_delay.to_i
         end
 
         @log.message :warning, "Mandatory refresh delay between requests, sleeping for #{delay.to_s} seconds"
