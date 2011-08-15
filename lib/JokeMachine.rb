@@ -155,7 +155,7 @@ class JokeMachine # {{{
         while( true )
           manual_input
           answer = get_choice_from_bipolar( "More input?" )
-          break unless( answer ) 
+          break unless( answer )
         end
       end # of if( @options.manual_input )
 
@@ -168,7 +168,7 @@ class JokeMachine # {{{
 
 
   # The function count goes through the jokes database and counts the jokes according to their source
-  # 
+  #
   # @returns  [Hash]      Returns a hash with "Total" and all other sources and their corresponding joke count
   #
   # FIXME: Use a proper SQL query for this.
@@ -530,7 +530,7 @@ class JokeMachine # {{{
     # Main
     @log.message :debug, "Loading this config file: #{filename.to_s}"
     result = File.open( filename, "r" ) { |file| YAML.load( file ) }                 # return proc which is in this case a hash
-    result = hashes2ostruct( result ) 
+    result = hashes_to_ostruct( result ) 
 
     # Post-condition check
     raise ArgumentError, "The function should return an OpenStruct, but instead returns a (#{result.class.to_s})" unless( result.is_a?( OpenStruct ) )
@@ -546,21 +546,21 @@ class JokeMachine # {{{
   #
   # @param    [Object]    object    Value can either be of type Hash or Array, if other then it is returned and not changed
   # @returns  [OStruct]             Returns nested open structs
-  def hashes2ostruct object # {{{
+  def hashes_to_ostruct object # {{{
 
     return case object
     when Hash
       object = object.clone
-      object.each { |key, value| object[key] = hashes2ostruct(value) }
+      object.each { |key, value| object[key] = hashes_to_ostruct(value) }
       OpenStruct.new( object )
     when Array
       object = object.clone
-      object.map! { |i| hashes2ostruct(i) }
+      object.map! { |i| hashes_to_ostruct(i) }
     else
       object
     end
 
-  end # of def hashes2ostruct }}}
+  end # of def hashes_to_ostruct }}}
 
 end # of class JokeMachine }}}
 
