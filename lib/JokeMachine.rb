@@ -81,7 +81,8 @@ class JokeMachine # {{{
 
     unless( options.nil? )
       @log.message :success, "Starting #{__FILE__} run"
-      @log.message :debug,    "Colorizing output as requested" if( @options.colorize )
+      @log.message :debug,   "Colorizing output as requested" if( @options.colorize )
+      @log.message :debug,   "Using random intervals when polling as requested" if( @options.random_intervals )
 
       ####
       # Main Control Flow

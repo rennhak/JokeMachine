@@ -177,7 +177,7 @@ class Ebaumsworld # {{{
           if( @options.random_intervals )
             sleep @config.refresh_delay.to_i
           else
-            sleep ( @config.refresh_delay.to_i + rand( @options.random_interval_time ) )
+            sleep( @config.refresh_delay.to_i + rand( @options.random_interval_time ) )
           end
 
           item
