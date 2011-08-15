@@ -391,6 +391,7 @@ class JokeMachine # {{{
     options.username                        = ""
     options.manual_input                    = false
     options.joke_count                      = false
+    options.random_intervalls               = false
 
     pristine_options                        = options.dup
 
@@ -426,6 +427,10 @@ class JokeMachine # {{{
 
       opts.on("-j", "--joke-count", "Count how many jokes we have in the Database") do |j|
         options.joke_count = j
+      end
+
+      opts.on("-r", "--random-intervalls", "Use random intervalls when downloading to mask our usage pattern") do |r|
+        options.random_intervalls = r
       end
 
       opts.separator ""
