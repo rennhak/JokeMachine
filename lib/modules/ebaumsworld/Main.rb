@@ -174,9 +174,9 @@ class Ebaumsworld # {{{
           end
 
           if( @options.random_intervals )
-            delay = @config.refresh_delay.to_i
-          else
             delay = @config.refresh_delay.to_i + rand( @options.random_interval_time )
+          else
+            delay = @config.refresh_delay.to_i
           end
 
           @log.message( :info, "Mandatory sleep between requests (#{delay}s)" )
