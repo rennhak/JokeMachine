@@ -7,4 +7,5 @@ doc/app/*
 lib/*.swp
 modules/*/*.swp
 lib/data/*
+lib/data.sav/*
 papers/*

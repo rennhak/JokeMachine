@@ -66,7 +66,7 @@ class Ebaumsworld # {{{
 
     @urls                   = []
 
-    @last_page              = 1
+    @last_page              = @config.last_page
     @urls                   << @config.base_url + "/" + @config.jokes_url + @last_page.to_s
 
     @jokes                  = []
